@@ -599,48 +599,36 @@
                 });
             }
 
-            // Theme toggle
+            // Theme toggle - Load saved setting and initialize
             const themeToggle = document.getElementById('themeToggle');
             if (themeToggle) {
                 const html = document.documentElement;
                 const toggleSpan = themeToggle.querySelector('span');
                 
-                // Load saved dark mode setting first (priority)
+                // Load saved dark mode setting - default to OFF if not set
                 const settings = JSON.parse(localStorage.getItem('settings_employee') || '{}');
-                if (settings.darkMode) {
+                const isDarkMode = settings.darkMode === true; // Explicitly check for true
+                
+                // Apply saved setting
+                if (isDarkMode) {
                     html.classList.add('dark');
                     themeToggle.style.background = '#4f46e5';
                     if (toggleSpan) {
                         toggleSpan.style.transform = 'translateX(24px)';
                     }
                 } else {
-                    // Fallback to old localStorage.theme if settings_employee doesn't have darkMode
-                    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                        html.classList.add('dark');
-                        if (toggleSpan) {
-                            themeToggle.style.background = '#4f46e5';
-                            toggleSpan.style.transform = 'translateX(24px)';
-                        }
-                        // Save to settings_employee for consistency
-                        settings.darkMode = true;
-                        localStorage.setItem('settings_employee', JSON.stringify(settings));
-                    } else {
-                        html.classList.remove('dark');
-                        themeToggle.style.background = '#e0e0e0';
-                        if (toggleSpan) {
-                            toggleSpan.style.transform = 'translateX(0)';
-                        }
+                    html.classList.remove('dark');
+                    themeToggle.style.background = '#e0e0e0';
+                    if (toggleSpan) {
+                        toggleSpan.style.transform = 'translateX(0)';
                     }
                 }
                 
+                // Toggle button - only changes visual state, doesn't save
                 themeToggle.addEventListener('click', function() {
                     html.classList.toggle('dark');
                     const isDark = html.classList.contains('dark');
-                    // Save to role-specific settings
-                    const currentSettings = JSON.parse(localStorage.getItem('settings_employee') || '{}');
-                    currentSettings.darkMode = isDark;
-                    localStorage.setItem('settings_employee', JSON.stringify(currentSettings));
-                    window.dispatchEvent(new Event('settingsUpdated'));
+                    // Update visual state only
                     this.style.background = isDark ? '#4f46e5' : '#e0e0e0';
                     if (toggleSpan) {
                         toggleSpan.style.transform = isDark ? 'translateX(24px)' : 'translateX(0)';
