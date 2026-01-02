@@ -1130,7 +1130,7 @@ function renderTeams() {
         </div>
                 
         <div style="display: flex; gap: 8px; margin-top: 12px;">
-            <a href="#" onclick="openManageTeamMembers(${team.id}); return false;" style="flex: 1; text-align: center; padding: 8px; background: #e63946; color: white; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600;">Manage Members</a>
+            <button type="button" onclick="openManageTeamMembers(${team.id})" style="flex: 1; text-align: center; padding: 8px; background: #e63946; color: white; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;">Manage Members</button>
         </div>
         </div>
         `;
