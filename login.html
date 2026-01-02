@@ -345,48 +345,68 @@
 
   <script>
 
-    // Initialize all demo data
+    // Initialize all demo data - FORCE UPDATE to ensure accounts always work
     function initializeDemoData() {
-      // Initialize Demo Accounts
-      const users = JSON.parse(localStorage.getItem('users')) || [];
-      
-      const demoAccounts = [
-        {
-          id: 'admin-1',
-          email: 'admin@gmail.com',
-          password: 'admin123',
-          name: 'Admin User',
-          role: 'admin'
-        },
-        {
-          id: 'leader-1',
-          email: 'leader@gmail.com',
-          password: 'leader123',
-          name: 'Sarah Johnson',
-          role: 'leader'
-        },
-        {
-          id: 'employee-1',
-          email: 'employee@gmail.com',
-          password: 'employee123',
-          name: 'Alex Morgan',
-          role: 'employee'
+      try {
+        // Initialize Demo Accounts - ALWAYS ensure these exist with correct credentials
+        let users = JSON.parse(localStorage.getItem('users') || '[]');
+        
+        const demoAccounts = [
+          {
+            id: 'admin-1',
+            email: 'admin@gmail.com',
+            password: 'admin123',
+            name: 'Admin User',
+            role: 'admin'
+          },
+          {
+            id: 'leader-1',
+            email: 'leader@gmail.com',
+            password: 'leader123',
+            name: 'Sarah Johnson',
+            role: 'leader'
+          },
+          {
+            id: 'employee-1',
+            email: 'employee@gmail.com',
+            password: 'employee123',
+            name: 'Alex Morgan',
+            role: 'employee'
+          }
+        ];
+        
+        // Remove any existing demo accounts first (to avoid duplicates)
+        users = users.filter(u => 
+          u.email !== 'admin@gmail.com' && 
+          u.email !== 'leader@gmail.com' && 
+          u.email !== 'employee@gmail.com'
+        );
+        
+        // Add demo accounts with correct credentials
+        demoAccounts.forEach(demoAccount => {
+          users.push({
+            id: demoAccount.id,
+            email: demoAccount.email,
+            password: demoAccount.password,
+            name: demoAccount.name,
+            role: demoAccount.role
+          });
+        });
+        
+        // Save to localStorage
+        localStorage.setItem('users', JSON.stringify(users));
+        
+        // Verify accounts were saved
+        const savedUsers = JSON.parse(localStorage.getItem('users') || '[]');
+        const adminExists = savedUsers.find(u => u.email === 'admin@gmail.com' && u.password === 'admin123');
+        const leaderExists = savedUsers.find(u => u.email === 'leader@gmail.com' && u.password === 'leader123');
+        const employeeExists = savedUsers.find(u => u.email === 'employee@gmail.com' && u.password === 'employee123');
+        
+        if (!adminExists || !leaderExists || !employeeExists) {
+          console.error('Demo accounts not properly initialized');
+          // Force re-initialize
+          localStorage.setItem('users', JSON.stringify(demoAccounts));
         }
-      ];
-      
-      // Update or add demo accounts
-      demoAccounts.forEach(demoAccount => {
-        const existingIndex = users.findIndex(u => u.email === demoAccount.email);
-        if (existingIndex !== -1) {
-          // Update existing account
-          users[existingIndex] = { ...users[existingIndex], ...demoAccount };
-        } else {
-          // Add new account
-          users.push(demoAccount);
-        }
-      });
-      
-      localStorage.setItem('users', JSON.stringify(users));
       
       // Initialize Demo Teams
       const teams = JSON.parse(localStorage.getItem('teams')) || [];
