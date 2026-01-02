@@ -1129,9 +1129,14 @@ let currentEditingTeamId = null;
 let selectedMembersToAdd = [];
 
 function openManageTeamMembers(teamId) {
-    currentEditingTeamId = teamId;
-    const team = teams.find(t => t.id === teamId);
-    if (!team) return;
+    // Convert teamId to number if it's a string (from onclick)
+    const numericTeamId = typeof teamId === 'string' ? parseInt(teamId, 10) : teamId;
+    currentEditingTeamId = numericTeamId;
+    const team = teams.find(t => t.id == numericTeamId); // Use == for type coercion
+    if (!team) {
+        console.error('Team not found with ID:', numericTeamId);
+        return;
+    }
     
     // Initialize members array if it doesn't exist
     if (!team.members) {
@@ -1206,7 +1211,7 @@ function openManageTeamMembers(teamId) {
 
 function removeTeamMember(index) {
     if (!currentEditingTeamId) return;
-    const team = teams.find(t => t.id === currentEditingTeamId);
+    const team = teams.find(t => t.id == currentEditingTeamId); // Use == for type coercion
     if (!team || !team.members) return;
     
     team.members.splice(index, 1);
@@ -1221,11 +1226,21 @@ function closeManageTeamMembersModal() {
 }
 
 function saveTeamMembers() {
-    if (!currentEditingTeamId) return;
-    const team = teams.find(t => t.id === currentEditingTeamId);
-    if (!team) return;
+    if (!currentEditingTeamId) {
+        console.error('No team ID set for editing');
+        return;
+    }
     
-    reloadData(); // Reload users to get latest data
+    // Reload data first to get latest users
+    reloadData();
+    
+    // Find team after reloading data
+    const team = teams.find(t => t.id == currentEditingTeamId); // Use == for type coercion
+    if (!team) {
+        console.error('Team not found with ID:', currentEditingTeamId);
+        alert('Error: Team not found. Please try again.');
+        return;
+    }
     
     // Get selected members to add
     const checkboxes = document.querySelectorAll('#availableMembersContainer input[type="checkbox"]:checked');
