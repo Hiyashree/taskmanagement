@@ -347,33 +347,33 @@
 
     // Initialize all demo data - FORCE UPDATE to ensure accounts always work
     function initializeDemoData() {
+      // Initialize Demo Accounts - ALWAYS ensure these exist with correct credentials
+      const demoAccounts = [
+        {
+          id: 'admin-1',
+          email: 'admin@gmail.com',
+          password: 'admin123',
+          name: 'Admin User',
+          role: 'admin'
+        },
+        {
+          id: 'leader-1',
+          email: 'leader@gmail.com',
+          password: 'leader123',
+          name: 'Sarah Johnson',
+          role: 'leader'
+        },
+        {
+          id: 'employee-1',
+          email: 'employee@gmail.com',
+          password: 'employee123',
+          name: 'Alex Morgan',
+          role: 'employee'
+        }
+      ];
+      
       try {
-        // Initialize Demo Accounts - ALWAYS ensure these exist with correct credentials
         let users = JSON.parse(localStorage.getItem('users') || '[]');
-        
-        const demoAccounts = [
-          {
-            id: 'admin-1',
-            email: 'admin@gmail.com',
-            password: 'admin123',
-            name: 'Admin User',
-            role: 'admin'
-          },
-          {
-            id: 'leader-1',
-            email: 'leader@gmail.com',
-            password: 'leader123',
-            name: 'Sarah Johnson',
-            role: 'leader'
-          },
-          {
-            id: 'employee-1',
-            email: 'employee@gmail.com',
-            password: 'employee123',
-            name: 'Alex Morgan',
-            role: 'employee'
-          }
-        ];
         
         // Remove any existing demo accounts first (to avoid duplicates)
         users = users.filter(u => 
@@ -407,6 +407,11 @@
           // Force re-initialize
           localStorage.setItem('users', JSON.stringify(demoAccounts));
         }
+      } catch (error) {
+        console.error('Error initializing demo accounts:', error);
+        // Fallback: set demo accounts directly
+        localStorage.setItem('users', JSON.stringify(demoAccounts));
+      }
       
       // Initialize Demo Teams
       const teams = JSON.parse(localStorage.getItem('teams')) || [];
@@ -729,13 +734,13 @@
     // Wait for DOM to be ready before setting up event listeners
     document.addEventListener('DOMContentLoaded', function() {
       // Get all form elements
-    const loginToggle = document.getElementById('login-toggle');
-    const signupToggle = document.getElementById('signup-toggle');
-    const loginForm = document.getElementById('login-form');
-    const signupForm = document.getElementById('signup-form');
-    const formTitle = document.getElementById('form-title');
-    const errorMessage = document.getElementById('error-message');
-    const successMessage = document.getElementById('success-message');
+      const loginToggle = document.getElementById('login-toggle');
+      const signupToggle = document.getElementById('signup-toggle');
+      const loginForm = document.getElementById('login-form');
+      const signupForm = document.getElementById('signup-form');
+      const formTitle = document.getElementById('form-title');
+      const errorMessage = document.getElementById('error-message');
+      const successMessage = document.getElementById('success-message');
       const demoAccountsSection = document.getElementById('demo-accounts');
       const emailInput = document.getElementById('login-email');
       const passwordInput = document.getElementById('login-password');
