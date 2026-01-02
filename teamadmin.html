@@ -779,6 +779,230 @@ body {
     cursor: pointer;
     font-size: 14px;
 }
+
+/* Mobile Menu Toggle */
+.menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #333;
+    cursor: pointer;
+    padding: 8px;
+    margin-right: 12px;
+}
+
+.dark .menu-toggle {
+    color: #e0e0e0;
+}
+
+/* Responsive Styles */
+@media (max-width: 1024px) {
+    .cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .search-bar {
+        max-width: 400px;
+    }
+}
+
+@media (max-width: 768px) {
+    .menu-toggle {
+        display: block;
+    }
+    
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        z-index: 1000;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    }
+    
+    .sidebar.open {
+        transform: translateX(0);
+    }
+    
+    /* Overlay for mobile sidebar */
+    .sidebar::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: -1;
+        opacity: 0;
+        transition: opacity 0.3s;
+        pointer-events: none;
+    }
+    
+    .sidebar.open::before {
+        opacity: 1;
+        pointer-events: all;
+    }
+    
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+    }
+    
+    .header {
+        padding: 12px 16px;
+        flex-wrap: wrap;
+    }
+    
+    .header-left {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    
+    .page-title {
+        font-size: 20px;
+        min-width: auto;
+    }
+    
+    .search-bar {
+        max-width: 100%;
+        order: 3;
+        width: 100%;
+        margin-top: 12px;
+    }
+    
+    .header-right {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    
+    .header-right button {
+        font-size: 12px;
+        padding: 8px 16px;
+    }
+    
+    .cards {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        padding-top: 16px;
+    }
+    
+    .card {
+        padding: 16px;
+    }
+    
+    .content {
+        padding: 20px 16px;
+    }
+    
+    .page-header h1 {
+        font-size: 24px;
+    }
+    
+    .page-header p {
+        font-size: 14px;
+    }
+    
+    .modal-box {
+        max-width: 95% !important;
+        margin: 1rem;
+    }
+    
+    .modal-body {
+        padding: 16px;
+    }
+    
+    .user-info {
+        display: none;
+    }
+    
+    .notification-container {
+        margin-right: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .header {
+        padding: 10px 12px;
+    }
+    
+    .page-title {
+        font-size: 18px;
+    }
+    
+    .search-bar input {
+        padding: 10px 14px 10px 40px;
+        font-size: 14px;
+    }
+    
+    .header-right button {
+        font-size: 11px;
+        padding: 6px 12px;
+    }
+    
+    .card h3 {
+        font-size: 16px;
+        flex-direction: column;
+        gap: 8px;
+        align-items: flex-start;
+    }
+    
+    .status {
+        font-size: 11px;
+        padding: 3px 8px;
+    }
+    
+    .info {
+        flex-direction: column;
+        gap: 12px;
+        margin: 16px 0;
+    }
+    
+    .circle {
+        width: 50px;
+        height: 50px;
+        font-size: 14px;
+    }
+    
+    .stats {
+        font-size: 12px;
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .modal-header {
+        padding: 16px;
+    }
+    
+    .modal-header h3 {
+        font-size: 18px;
+    }
+    
+    .input-field {
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+    
+    .btn-primary,
+    .btn-secondary {
+        padding: 10px 16px;
+        font-size: 13px;
+    }
+    
+    .member-item {
+        flex-direction: column;
+        gap: 8px;
+        align-items: flex-start;
+    }
+    
+    .member-info {
+        width: 100%;
+    }
+    
+    .btn-remove {
+        width: 100%;
+        text-align: center;
+    }
+}
   </style>
 </head>
 <body>
@@ -845,6 +1069,11 @@ body {
         <div class="main-content">
             <!-- Header -->
             <header class="header">
+                <button class="menu-toggle" id="menuToggle" onclick="toggleSidebar()">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 24px; height: 24px;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
                 <div class="header-left">
                     <h1 class="page-title">Teams</h1>
                     <div class="search-bar">
@@ -1833,6 +2062,25 @@ window.addEventListener('storage', function(e) {
     if (e.key && e.key.startsWith('settings_')) loadSettings();
 });
 window.addEventListener('settingsUpdated', loadSettings);
+
+// Mobile menu toggle
+function toggleSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    if (sidebar) {
+        sidebar.classList.toggle('open');
+    }
+}
+
+// Close sidebar when clicking outside on mobile
+document.addEventListener('click', function(e) {
+    const sidebar = document.querySelector('.sidebar');
+    const menuToggle = document.getElementById('menuToggle');
+    if (window.innerWidth <= 768 && sidebar && menuToggle) {
+        if (!sidebar.contains(e.target) && !menuToggle.contains(e.target) && sidebar.classList.contains('open')) {
+            sidebar.classList.remove('open');
+        }
+    }
+});
 
 // Initialize teams on page load
 document.addEventListener('DOMContentLoaded', function() {

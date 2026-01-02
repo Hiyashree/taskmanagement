@@ -107,9 +107,6 @@
         }
 
         .graphura-text {
-        }
-        
-        .dark .graphura-text {
             font-size: 24px;
             font-weight: 700;
             background: linear-gradient(135deg, #e63946 0%, #c1121f 100%);
@@ -117,6 +114,14 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
             letter-spacing: -0.5px;
+            display: block;
+        }
+        
+        .dark .graphura-text {
+            background: linear-gradient(135deg, #e63946 0%, #ff6b7a 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         
@@ -538,6 +543,169 @@
             background-color: #f9f9f9;
             border-radius: 8px;
         }
+
+/* Mobile Menu Toggle */
+.menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #333;
+    cursor: pointer;
+    padding: 8px;
+    margin-right: 12px;
+}
+
+.dark .menu-toggle {
+    color: #e0e0e0;
+}
+
+/* Responsive Styles */
+@media (max-width: 1024px) {
+    .search-bar {
+        max-width: 400px;
+    }
+}
+
+@media (max-width: 768px) {
+    .menu-toggle {
+        display: block;
+    }
+    
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        z-index: 1000;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    }
+    
+    .sidebar.open {
+        transform: translateX(0);
+    }
+    
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+    }
+    
+    .header {
+        padding: 12px 16px;
+        flex-wrap: wrap;
+    }
+    
+    .header-left {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    
+    .page-title {
+        font-size: 20px;
+        min-width: auto;
+    }
+    
+    .search-bar {
+        max-width: 100%;
+        order: 3;
+        width: 100%;
+        margin-top: 12px;
+    }
+    
+    .header-right {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    
+    .header-right button {
+        font-size: 12px;
+        padding: 8px 16px;
+    }
+    
+    .content {
+        padding: 20px 16px;
+    }
+    
+    .page-header h1 {
+        font-size: 24px;
+    }
+    
+    .page-header p {
+        font-size: 14px;
+    }
+    
+    .modal-box {
+        max-width: 95% !important;
+        margin: 1rem;
+    }
+    
+    .modal-body {
+        padding: 16px;
+    }
+    
+    .user-info {
+        display: none;
+    }
+    
+    .notification-container {
+        margin-right: 8px;
+    }
+    
+    table {
+        font-size: 12px;
+    }
+    
+    .task-table th,
+    .task-table td {
+        padding: 8px 4px;
+    }
+}
+
+@media (max-width: 480px) {
+    .header {
+        padding: 10px 12px;
+    }
+    
+    .page-title {
+        font-size: 18px;
+    }
+    
+    .search-bar input {
+        padding: 10px 14px 10px 40px;
+        font-size: 14px;
+    }
+    
+    .header-right button {
+        font-size: 11px;
+        padding: 6px 12px;
+    }
+    
+    .modal-header {
+        padding: 16px;
+    }
+    
+    .modal-header h3 {
+        font-size: 18px;
+    }
+    
+    .input-field {
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+    
+    .btn-primary,
+    .btn-secondary {
+        padding: 10px 16px;
+        font-size: 13px;
+    }
+    
+    table {
+        font-size: 11px;
+    }
+    
+    .task-table th,
+    .task-table td {
+        padding: 6px 2px;
+    }
+}
     </style>
 </head>
 <body>
@@ -604,6 +772,11 @@
         <div class="main-content">
             <!-- Header -->
             <header class="header">
+                <button class="menu-toggle" id="menuToggle" onclick="toggleSidebar()">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 24px; height: 24px;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
                 <div class="header-left">
                     <h1 class="page-title">Tasks</h1>
                     <div class="search-bar">
@@ -746,6 +919,25 @@
     </div>
 
     <script>
+        // Mobile menu toggle
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            if (sidebar) {
+                sidebar.classList.toggle('open');
+            }
+        }
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(e) {
+            const sidebar = document.querySelector('.sidebar');
+            const menuToggle = document.getElementById('menuToggle');
+            if (window.innerWidth <= 768 && sidebar && menuToggle) {
+                if (!sidebar.contains(e.target) && !menuToggle.contains(e.target) && sidebar.classList.contains('open')) {
+                    sidebar.classList.remove('open');
+                }
+            }
+        });
+
         // Simulated data storage using localStorage
         let teams = JSON.parse(localStorage.getItem('teams')) || [];
         let projects = JSON.parse(localStorage.getItem('projects')) || [];
