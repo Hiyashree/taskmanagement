@@ -801,13 +801,48 @@
       errorMessage.classList.remove('show');
       successMessage.classList.remove('show');
       
-      // Get users from localStorage
-      const users = JSON.parse(localStorage.getItem('users')) || [];
+      // Ensure demo accounts exist before checking (especially for GitHub Pages)
+      const demoEmails = ['admin@gmail.com', 'leader@gmail.com', 'employee@gmail.com'];
+      if (demoEmails.includes(email)) {
+        // Re-initialize demo accounts if this is a demo account login attempt
+        initializeDemoData();
+      }
       
-      // Find user by email
+      // Get users from localStorage (after potential re-initialization)
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      
+      // Find user by email and password
       const user = users.find(u => u.email === email && u.password === password);
       
       if (!user) {
+        // If demo account login fails, try one more time to initialize
+        if (demoEmails.includes(email)) {
+          initializeDemoData();
+          const updatedUsers = JSON.parse(localStorage.getItem('users') || '[]');
+          const retryUser = updatedUsers.find(u => u.email === email && u.password === password);
+          if (retryUser) {
+            // Store current user in session
+            localStorage.setItem('currentUser', JSON.stringify({
+              id: retryUser.id,
+              email: retryUser.email,
+              name: retryUser.name,
+              role: retryUser.role
+            }));
+            
+            // Redirect based on role
+            switch(retryUser.role) {
+              case 'admin':
+                window.location.href = 'admin.html';
+                return;
+              case 'leader':
+                window.location.href = 'team-leader.html';
+                return;
+              case 'employee':
+                window.location.href = 'employee.html';
+                return;
+            }
+          }
+        }
         errorMessage.textContent = 'Invalid email or password';
         errorMessage.classList.add('show');
         return;
