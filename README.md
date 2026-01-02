@@ -48,8 +48,8 @@ A modern, role-based task management dashboard built with HTML, CSS, and JavaScr
 
 1. Clone this repository:
 ```bash
-git clone https://github.com/yourusername/teammanagement.git
-cd teammanagement
+git clone https://github.com/yourusername/taskmanagement.git
+cd taskmanagement
 ```
 
 2. Open `index.html` in a web browser, or use a local server:
