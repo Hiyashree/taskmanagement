@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Graphura.in - Billing & Reporting</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -1394,8 +1395,139 @@
         }
 
         function exportToPDF() {
-            alert('PDF export functionality will be implemented with a PDF library. For now, please use CSV export.');
-            // In a real implementation, you would use a library like jsPDF or pdfmake
+            reloadData(); // Ensure we have latest data
+            const performanceData = calculatePerformance();
+            
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                // Title
+                doc.setFontSize(20);
+                doc.setTextColor(230, 57, 70);
+                doc.text('Team Performance Report', 20, 20);
+                
+                // Date
+                doc.setFontSize(10);
+                doc.setTextColor(128, 128, 128);
+                doc.text(`Generated on ${new Date().toLocaleString()}`, 20, 30);
+                
+                let yPos = 45;
+                
+                // Summary Statistics
+                doc.setFontSize(14);
+                doc.setTextColor(230, 57, 70);
+                doc.text('Summary Statistics', 20, yPos);
+                yPos += 10;
+                
+                doc.setFontSize(12);
+                doc.setTextColor(0, 0, 0);
+                const totalTasks = tasks.length;
+                const completedTasks = tasks.filter(t => t.status === 'Completed').length;
+                const inProgressTasks = tasks.filter(t => t.status === 'In Progress').length;
+                const pendingTasks = tasks.filter(t => t.status === 'Pending' || !t.status).length;
+                
+                doc.text(`Total Tasks: ${totalTasks}`, 20, yPos);
+                yPos += 8;
+                doc.text(`Completed: ${completedTasks}`, 20, yPos);
+                yPos += 8;
+                doc.text(`In Progress: ${inProgressTasks}`, 20, yPos);
+                yPos += 8;
+                doc.text(`Pending: ${pendingTasks}`, 20, yPos);
+                yPos += 15;
+                
+                // Performance Table
+                doc.setFontSize(14);
+                doc.setTextColor(230, 57, 70);
+                doc.text('Employee Performance', 20, yPos);
+                yPos += 10;
+                
+                doc.setFontSize(10);
+                doc.setTextColor(0, 0, 0);
+                
+                // Table Header
+                doc.setFontSize(10);
+                doc.setFont(undefined, 'bold');
+                doc.text('Employee', 20, yPos);
+                doc.text('Total', 80, yPos);
+                doc.text('Completed', 100, yPos);
+                doc.text('In Progress', 130, yPos);
+                doc.text('Rate', 160, yPos);
+                doc.text('Performance', 180, yPos);
+                yPos += 8;
+                
+                // Table Data
+                doc.setFont(undefined, 'normal');
+                performanceData.forEach((emp, index) => {
+                    if (yPos > 270) {
+                        doc.addPage();
+                        yPos = 20;
+                        // Redraw header
+                        doc.setFont(undefined, 'bold');
+                        doc.text('Employee', 20, yPos);
+                        doc.text('Total', 80, yPos);
+                        doc.text('Completed', 100, yPos);
+                        doc.text('In Progress', 130, yPos);
+                        doc.text('Rate', 160, yPos);
+                        doc.text('Performance', 180, yPos);
+                        yPos += 8;
+                        doc.setFont(undefined, 'normal');
+                    }
+                    
+                    doc.text(emp.employee.substring(0, 20), 20, yPos);
+                    doc.text(emp.total.toString(), 80, yPos);
+                    doc.text(emp.completed.toString(), 100, yPos);
+                    doc.text(emp.inProgress.toString(), 130, yPos);
+                    doc.text(`${emp.completionRate}%`, 160, yPos);
+                    const perfText = emp.completionRate >= 80 ? 'Excellent' : emp.completionRate >= 60 ? 'Good' : emp.completionRate >= 40 ? 'Average' : 'Needs Improvement';
+                    doc.text(perfText.substring(0, 15), 180, yPos);
+                    yPos += 8;
+                });
+                
+                // Project Summary
+                if (yPos > 250) {
+                    doc.addPage();
+                    yPos = 20;
+                }
+                
+                doc.setFontSize(14);
+                doc.setTextColor(230, 57, 70);
+                doc.text('Project Summary', 20, yPos);
+                yPos += 10;
+                
+                doc.setFontSize(10);
+                doc.setTextColor(0, 0, 0);
+                projects.forEach((project, index) => {
+                    if (yPos > 270) {
+                        doc.addPage();
+                        yPos = 20;
+                    }
+                    const projectTasks = tasks.filter(t => t.projectId == project.id);
+                    const total = projectTasks.length;
+                    const completed = projectTasks.filter(t => t.status === 'Completed').length;
+                    const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
+                    
+                    doc.text(`${index + 1}. ${project.name || 'Unnamed Project'}`, 25, yPos);
+                    yPos += 7;
+                    doc.text(`   Tasks: ${total} | Completed: ${completed} | Progress: ${progress}%`, 25, yPos);
+                    yPos += 10;
+                });
+                
+                // Footer
+                const pageCount = doc.internal.pages.length - 1;
+                for (let i = 1; i <= pageCount; i++) {
+                    doc.setPage(i);
+                    doc.setFontSize(8);
+                    doc.setTextColor(128, 128, 128);
+                    doc.text(`Page ${i} of ${pageCount}`, 20, doc.internal.pageSize.height - 10);
+                }
+                
+                // Save PDF
+                doc.save(`Team_Performance_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                alert('Error generating PDF. Please try again.');
+            }
         }
 
         function applyFilters() {

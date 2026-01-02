@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Graphura.in - Leader Projects</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700;900&display=swap" rel="stylesheet"/>
     
@@ -925,7 +926,122 @@ function exportProjectsPDF() {
         alert('Please select a project to export.');
         return;
     }
-    alert('PDF export functionality would be implemented here. This would generate a PDF report of the selected project.');
+    
+    const projects = JSON.parse(localStorage.getItem('projects')) || [];
+    const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    const teams = JSON.parse(localStorage.getItem('teams')) || [];
+    const users = JSON.parse(localStorage.getItem('users')) || [];
+    
+    const project = projects.find(p => p.id == currentProjectId);
+    if (!project) {
+        alert('Project not found.');
+        return;
+    }
+    
+    const projectTasks = tasks.filter(t => t.projectId == project.id);
+    const completedTasks = projectTasks.filter(t => t.status === 'Completed').length;
+    const pendingTasks = projectTasks.filter(t => t.status === 'Pending').length;
+    const inProgressTasks = projectTasks.filter(t => t.status === 'In Progress').length;
+    const progress = projectTasks.length > 0 ? Math.round((completedTasks / projectTasks.length) * 100) : 0;
+    const team = teams.find(t => t.id === project.teamId);
+    
+    try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        // Title
+        doc.setFontSize(20);
+        doc.setTextColor(230, 57, 70);
+        doc.text('Project Report', 20, 20);
+        
+        // Project Name
+        doc.setFontSize(16);
+        doc.setTextColor(0, 0, 0);
+        doc.text(project.name || 'Unnamed Project', 20, 35);
+        
+        let yPos = 45;
+        
+        // Project Details
+        doc.setFontSize(12);
+        doc.text(`Description: ${project.description || 'No description'}`, 20, yPos);
+        yPos += 10;
+        doc.text(`Status: ${project.status || 'Active'}`, 20, yPos);
+        yPos += 10;
+        doc.text(`Progress: ${progress}%`, 20, yPos);
+        yPos += 10;
+        doc.text(`Team: ${team ? team.name : 'Unassigned'}`, 20, yPos);
+        yPos += 10;
+        if (project.leader) {
+            doc.text(`Leader: ${project.leader}`, 20, yPos);
+            yPos += 10;
+        }
+        if (project.createdAt) {
+            doc.text(`Created: ${new Date(project.createdAt).toLocaleDateString()}`, 20, yPos);
+            yPos += 10;
+        }
+        yPos += 5;
+        
+        // Task Overview
+        doc.setFontSize(14);
+        doc.setTextColor(230, 57, 70);
+        doc.text('Task Overview', 20, yPos);
+        yPos += 10;
+        doc.setFontSize(12);
+        doc.setTextColor(0, 0, 0);
+        doc.text(`Total Tasks: ${projectTasks.length}`, 20, yPos);
+        yPos += 8;
+        doc.text(`Pending: ${pendingTasks}`, 20, yPos);
+        yPos += 8;
+        doc.text(`In Progress: ${inProgressTasks}`, 20, yPos);
+        yPos += 8;
+        doc.text(`Completed: ${completedTasks}`, 20, yPos);
+        yPos += 10;
+        
+        // Tasks List
+        if (projectTasks.length > 0) {
+            doc.setFontSize(14);
+            doc.setTextColor(230, 57, 70);
+            doc.text('Tasks', 20, yPos);
+            yPos += 10;
+            doc.setFontSize(10);
+            doc.setTextColor(0, 0, 0);
+            
+            projectTasks.forEach((task, index) => {
+                if (yPos > 270) {
+                    doc.addPage();
+                    yPos = 20;
+                }
+                doc.text(`${index + 1}. ${task.title || 'Untitled Task'}`, 25, yPos);
+                yPos += 7;
+                doc.text(`   Status: ${task.status || 'Pending'}`, 25, yPos);
+                yPos += 7;
+                if (task.assignedTo) {
+                    doc.text(`   Assigned to: ${task.assignedTo}`, 25, yPos);
+                    yPos += 7;
+                }
+                if (task.dueDate) {
+                    doc.text(`   Due: ${new Date(task.dueDate).toLocaleDateString()}`, 25, yPos);
+                    yPos += 7;
+                }
+                yPos += 5;
+            });
+        }
+        
+        // Footer
+        const pageCount = doc.internal.pages.length - 1;
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            doc.setFontSize(8);
+            doc.setTextColor(128, 128, 128);
+            doc.text(`Generated on ${new Date().toLocaleString()} - Page ${i} of ${pageCount}`, 20, doc.internal.pageSize.height - 10);
+        }
+        
+        // Save PDF
+        doc.save(`Project_${project.name.replace(/[^a-z0-9]/gi, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
+    } catch (error) {
+        console.error('Error generating PDF:', error);
+        alert('Error generating PDF. Please try again.');
+    }
 }
 
 function shareProjectsReport() {
