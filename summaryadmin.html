@@ -1367,6 +1367,25 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // Mobile menu toggle
+    function toggleSidebar() {
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar) {
+            sidebar.classList.toggle('open');
+        }
+    }
+
+    // Close sidebar when clicking outside on mobile
+    document.addEventListener('click', function(e) {
+        const sidebar = document.querySelector('.sidebar');
+        const menuToggle = document.getElementById('menuToggle');
+        if (window.innerWidth <= 768 && sidebar && menuToggle) {
+            if (!sidebar.contains(e.target) && !menuToggle.contains(e.target) && sidebar.classList.contains('open')) {
+                sidebar.classList.remove('open');
+            }
+        }
+    });
+
     // Check user role and show/hide admin-only navigation items
     document.addEventListener('DOMContentLoaded', function() {
         const currentUser = JSON.parse(localStorage.getItem('currentUser'));
