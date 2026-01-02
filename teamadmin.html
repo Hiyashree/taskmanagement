@@ -934,10 +934,23 @@ body {
                 </div>
                 
                 <div style="border-top: 1px solid #e0e0e0; padding-top: 16px; margin-top: 16px;">
-                    <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 12px; color: #333;">Add New Members:</h4>
+                    <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 12px; color: #333;">Add Existing Members:</h4>
                     <div id="availableMembersContainer" class="members-checkbox-container">
                         <!-- Available members checkboxes will be populated here -->
                     </div>
+                    
+                    <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #e0e0e0;">
+                        <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 12px; color: #333;">Add New Employee:</h4>
+                        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                            <input type="text" id="newEmployeeName" placeholder="Employee Name" style="flex: 1; padding: 10px 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px;">
+                            <input type="email" id="newEmployeeEmail" placeholder="Email (optional)" style="flex: 1; padding: 10px 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px;">
+                        </div>
+                        <button type="button" onclick="addNewEmployee()" style="padding: 10px 20px; background: #e63946; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; width: 100%;">Add Employee</button>
+                        <div id="newEmployeesList" style="margin-top: 12px;">
+                            <!-- Newly added employees will appear here -->
+                        </div>
+                    </div>
+                    
                     <div style="display: flex; gap: 12px; margin-top: 16px;">
                         <button type="button" onclick="closeManageTeamMembersModal()" class="btn-secondary" style="flex: 1;">Cancel</button>
                         <button type="button" onclick="saveTeamMembers()" class="btn-primary" style="flex: 1;">Save Changes</button>
@@ -1206,7 +1219,83 @@ function openManageTeamMembers(teamId) {
     }
     
     selectedMembersToAdd = [];
+    newEmployeesToAdd = []; // Reset new employees list
+    updateNewEmployeesList(); // Clear the new employees display
     if (modal) modal.classList.remove('hidden');
+}
+
+function addNewEmployee() {
+    const nameInput = document.getElementById('newEmployeeName');
+    const emailInput = document.getElementById('newEmployeeEmail');
+    
+    if (!nameInput || !nameInput.value.trim()) {
+        alert('Please enter an employee name.');
+        return;
+    }
+    
+    const name = nameInput.value.trim();
+    const email = emailInput.value.trim() || `${name.toLowerCase().replace(/\s+/g, '.')}@graphura.com`;
+    
+    // Check if already in new employees list
+    if (newEmployeesToAdd.some(e => e.name.toLowerCase() === name.toLowerCase())) {
+        alert('This employee is already in the list to be added.');
+        return;
+    }
+    
+    // Check if already a team member
+    const team = teams.find(t => t.id == currentEditingTeamId);
+    if (team && team.members) {
+        const currentMemberNames = team.members.map(m => typeof m === 'string' ? m : m.name);
+        if (currentMemberNames.some(n => n.toLowerCase() === name.toLowerCase())) {
+            alert('This employee is already a team member.');
+            return;
+        }
+    }
+    
+    // Add to new employees list
+    newEmployeesToAdd.push({
+        name: name,
+        email: email,
+        role: 'employee'
+    });
+    
+    // Clear inputs
+    nameInput.value = '';
+    emailInput.value = '';
+    
+    // Update display
+    updateNewEmployeesList();
+}
+
+function updateNewEmployeesList() {
+    const newEmployeesList = document.getElementById('newEmployeesList');
+    if (!newEmployeesList) return;
+    
+    if (newEmployeesToAdd.length === 0) {
+        newEmployeesList.innerHTML = '';
+        return;
+    }
+    
+    newEmployeesList.innerHTML = newEmployeesToAdd.map((emp, index) => {
+        const initials = emp.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+        return `
+            <div class="member-item" style="margin-bottom: 8px;">
+                <div class="member-info">
+                    <div class="member-avatar">${initials}</div>
+                    <div class="member-details">
+                        <div class="member-name">${emp.name} <span style="font-size: 11px; color: #999; font-weight: normal;">(New)</span></div>
+                        <div class="member-email">${emp.email}</div>
+                    </div>
+                </div>
+                <button class="btn-remove" onclick="removeNewEmployee(${index})" style="padding: 6px 12px; background: #ff4d4d; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px;">Remove</button>
+            </div>
+        `;
+    }).join('');
+}
+
+function removeNewEmployee(index) {
+    newEmployeesToAdd.splice(index, 1);
+    updateNewEmployeesList();
 }
 
 function removeTeamMember(index) {
@@ -1223,6 +1312,13 @@ function closeManageTeamMembersModal() {
     if (modal) modal.classList.add('hidden');
     currentEditingTeamId = null;
     selectedMembersToAdd = [];
+    newEmployeesToAdd = [];
+    // Clear new employee inputs
+    const nameInput = document.getElementById('newEmployeeName');
+    const emailInput = document.getElementById('newEmployeeEmail');
+    if (nameInput) nameInput.value = '';
+    if (emailInput) emailInput.value = '';
+    updateNewEmployeesList();
 }
 
 function saveTeamMembers() {
@@ -1274,7 +1370,7 @@ function saveTeamMembers() {
         }
     }
     
-    // Add new members
+    // Add selected existing members
     newMembers.forEach(newMember => {
         const exists = team.members.some(m => {
             const memberName = typeof m === 'string' ? m : m.name;
@@ -1282,6 +1378,38 @@ function saveTeamMembers() {
         });
         if (!exists) {
             team.members.push(newMember);
+        }
+    });
+    
+    // Add new employees (create user accounts for them)
+    newEmployeesToAdd.forEach(newEmp => {
+        // Check if user already exists
+        let existingUser = users.find(u => u.name.toLowerCase() === newEmp.name.toLowerCase() || u.email === newEmp.email);
+        
+        if (!existingUser) {
+            // Create new user account
+            const newUser = {
+                id: `employee-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                name: newEmp.name,
+                email: newEmp.email,
+                password: 'password123', // Default password
+                role: 'employee'
+            };
+            users.push(newUser);
+            localStorage.setItem('users', JSON.stringify(users));
+        }
+        
+        // Add to team members
+        const exists = team.members.some(m => {
+            const memberName = typeof m === 'string' ? m : m.name;
+            return memberName.toLowerCase() === newEmp.name.toLowerCase();
+        });
+        if (!exists) {
+            team.members.push({
+                name: newEmp.name,
+                email: newEmp.email,
+                role: 'employee'
+            });
         }
     });
     
