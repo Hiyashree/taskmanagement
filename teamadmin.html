@@ -107,9 +107,6 @@ body {
         }
 
         .graphura-text {
-        }
-        
-        .dark .graphura-text {
             font-size: 24px;
             font-weight: 700;
             background: linear-gradient(135deg, #e63946 0%, #c1121f 100%);
@@ -117,6 +114,14 @@ body {
             -webkit-text-fill-color: transparent;
             background-clip: text;
             letter-spacing: -0.5px;
+            display: block;
+        }
+        
+        .dark .graphura-text {
+            background: linear-gradient(135deg, #e63946 0%, #ff6b7a 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         
@@ -850,6 +855,7 @@ body {
                     </div>
                 </div>
                 <div class="header-right">
+                    <button id="addEmployeeBtn" onclick="openAddEmployeeModal()" style="padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; margin-right: 12px;">+ Add Employee</button>
                     <button id="createTeamBtn" style="padding: 10px 20px; background: #e63946; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; margin-right: 16px;">+ Create Team</button>
                     <div class="notification-container">
                         <svg class="notification-icon" id="notificationIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -922,15 +928,18 @@ body {
     </div>
     
     <!-- Manage Team Members Modal -->
-    <div id="manageTeamMembersModal" class="modal-overlay hidden">
-        <div class="modal-box">
+    <div id="manageTeamMembersModal" class="modal-overlay hidden" onclick="if(event.target === this) closeManageTeamMembersModal()">
+        <div class="modal-box" onclick="event.stopPropagation()">
             <div class="modal-header">
                 <h3 id="manageTeamMembersTitle">Manage Team Members</h3>
                 <button onclick="closeManageTeamMembersModal()" style="background: none; border: none; font-size: 24px; color: #666; cursor: pointer;">&times;</button>
             </div>
-            <div class="modal-body">
-                <div id="currentMembersList" class="members-list">
-                    <!-- Current members will be displayed here -->
+            <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                <div style="margin-bottom: 20px;">
+                    <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 12px; color: #333;">Current Team Members:</h4>
+                    <div id="currentMembersList" class="members-list">
+                        <!-- Current members will be displayed here -->
+                    </div>
                 </div>
                 
                 <div style="border-top: 1px solid #e0e0e0; padding-top: 16px; margin-top: 16px;">
@@ -956,6 +965,36 @@ body {
                         <button type="button" onclick="saveTeamMembers()" class="btn-primary" style="flex: 1;">Save Changes</button>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add Employee Modal -->
+    <div id="addEmployeeModal" class="modal-overlay hidden">
+        <div class="modal-box" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3>Add New Employee</h3>
+                <button onclick="closeAddEmployeeModal()" style="background: none; border: none; font-size: 24px; color: #666; cursor: pointer;">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="addEmployeeForm" onsubmit="handleAddEmployee(event); return false;">
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Employee Name *</label>
+                        <input type="text" id="employeeName" required style="width: 100%; padding: 10px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 14px;" placeholder="Enter employee name">
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Email *</label>
+                        <input type="email" id="employeeEmail" required style="width: 100%; padding: 10px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 14px;" placeholder="Enter email address">
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Password *</label>
+                        <input type="password" id="employeePassword" required style="width: 100%; padding: 10px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 14px;" placeholder="Enter password (default: password123)" value="password123">
+                    </div>
+                    <div style="display: flex; gap: 12px; margin-top: 20px;">
+                        <button type="button" onclick="closeAddEmployeeModal()" class="btn-secondary" style="flex: 1;">Cancel</button>
+                        <button type="submit" class="btn-primary" style="flex: 1; background: #4CAF50;">Add Employee</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -1130,7 +1169,7 @@ function renderTeams() {
         </div>
                 
         <div style="display: flex; gap: 8px; margin-top: 12px;">
-            <button type="button" onclick="openManageTeamMembers(${team.id})" style="flex: 1; text-align: center; padding: 8px; background: #e63946; color: white; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;">Manage Members</button>
+            <button type="button" onclick="openManageTeamMembers('${team.id}')" style="flex: 1; text-align: center; padding: 8px; background: #e63946; color: white; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#d32f2f'" onmouseout="this.style.background='#e63946'">Manage Members</button>
         </div>
         </div>
         `;
@@ -1140,14 +1179,23 @@ function renderTeams() {
 // Team Member Management Functions
 let currentEditingTeamId = null;
 let selectedMembersToAdd = [];
+let newEmployeesToAdd = [];
 
 function openManageTeamMembers(teamId) {
-    // Convert teamId to number if it's a string (from onclick)
-    const numericTeamId = typeof teamId === 'string' ? parseInt(teamId, 10) : teamId;
-    currentEditingTeamId = numericTeamId;
-    const team = teams.find(t => t.id == numericTeamId); // Use == for type coercion
+    // Reload data first to ensure we have the latest
+    reloadData();
+    
+    // Store the teamId (can be string or number) - normalize to string for consistency
+    currentEditingTeamId = String(teamId);
+    
+    // Find team - handle both string and number IDs
+    const team = teams.find(t => {
+        return String(t.id) === String(teamId) || t.id == teamId;
+    });
+    
     if (!team) {
-        console.error('Team not found with ID:', numericTeamId);
+        console.error('Team not found with ID:', teamId, 'Available teams:', teams.map(t => ({ id: t.id, name: t.name })));
+        alert('Team not found. Please refresh the page and try again.');
         return;
     }
     
@@ -1161,28 +1209,67 @@ function openManageTeamMembers(teamId) {
     const currentMembersList = document.getElementById('currentMembersList');
     const availableMembersContainer = document.getElementById('availableMembersContainer');
     
+    if (!modal) {
+        console.error('Modal not found!');
+        alert('Error: Modal not found. Please refresh the page.');
+        return;
+    }
+    
     if (title) title.textContent = `Manage Members - ${team.name}`;
     
-    // Display current members
+    // Display current members (including leader)
     if (currentMembersList) {
-        if (team.members.length === 0) {
+        // Create a combined list of all members including leader
+        const allMembers = [];
+        
+        // Add leader first if exists
+        if (team.leader) {
+            const leaderUser = users.find(u => u.name === team.leader);
+            allMembers.push({
+                name: team.leader,
+                email: leaderUser?.email || `${team.leader.toLowerCase().replace(/\s+/g, '.')}@graphura.com`,
+                role: 'leader',
+                isLeader: true
+            });
+        }
+        
+        // Add other members (excluding leader if already added)
+        if (team.members && team.members.length > 0) {
+            team.members.forEach(member => {
+                const memberName = typeof member === 'string' ? member : member.name;
+                if (memberName !== team.leader) {
+                    const memberEmail = typeof member === 'object' ? member.email : '';
+                    const memberUser = users.find(u => u.name === memberName);
+                    allMembers.push({
+                        name: memberName,
+                        email: memberEmail || memberUser?.email || `${memberName.toLowerCase().replace(/\s+/g, '.')}@graphura.com`,
+                        role: typeof member === 'object' ? member.role : (memberUser?.role || 'employee'),
+                        isLeader: false
+                    });
+                }
+            });
+        }
+        
+        if (allMembers.length === 0) {
             currentMembersList.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">No members added yet.</div>';
         } else {
-            currentMembersList.innerHTML = team.members.map((member, index) => {
-                const memberName = typeof member === 'string' ? member : member.name;
-                const memberEmail = typeof member === 'object' ? member.email : '';
-                const initials = memberName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+            currentMembersList.innerHTML = allMembers.map((member, index) => {
+                const initials = member.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                const actualIndex = team.members ? team.members.findIndex(m => {
+                    const mName = typeof m === 'string' ? m : m.name;
+                    return mName === member.name;
+                }) : -1;
                 
                 return `
-                    <div class="member-item">
-                        <div class="member-info">
-                            <div class="member-avatar">${initials}</div>
-                            <div class="member-details">
-                                <div class="member-name">${memberName}</div>
-                                ${memberEmail ? `<div class="member-email">${memberEmail}</div>` : ''}
+                    <div class="member-item" style="display: flex; align-items: center; justify-content: space-between; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 8px; background: ${member.isLeader ? '#fff5f5' : '#fff'};">
+                        <div class="member-info" style="display: flex; align-items: center; gap: 12px; flex: 1;">
+                            <div class="member-avatar" style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #e63946 0%, #c1121f 100%); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px;">${initials}</div>
+                            <div class="member-details" style="flex: 1;">
+                                <div class="member-name" style="font-weight: 600; color: #333; font-size: 14px;">${member.name} ${member.isLeader ? '<span style="color: #e63946; font-size: 12px;">(Leader)</span>' : ''}</div>
+                                ${member.email ? `<div class="member-email" style="font-size: 12px; color: #999; margin-top: 2px;">${member.email}</div>` : ''}
                             </div>
                         </div>
-                        <button class="btn-remove" onclick="removeTeamMember(${index})">Remove</button>
+                        ${member.isLeader ? '<span style="color: #999; font-size: 12px; padding: 6px 12px;">Cannot remove</span>' : `<button class="btn-remove" onclick="removeTeamMember(${actualIndex >= 0 ? actualIndex : index})" style="padding: 6px 12px; background: #ff4d4d; color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: background 0.2s;">Remove</button>`}
                     </div>
                 `;
             }).join('');
@@ -1191,13 +1278,20 @@ function openManageTeamMembers(teamId) {
     
     // Populate available members (all users except those already in team and the leader)
     if (availableMembersContainer) {
-        const users = JSON.parse(localStorage.getItem('users')) || [];
-        const currentMemberNames = team.members.map(m => typeof m === 'string' ? m : m.name);
-        const availableUsers = users.filter(u => 
-            u.name !== team.leader && 
-            !currentMemberNames.includes(u.name) &&
-            (u.role === 'employee' || u.role === 'leader')
-        );
+        reloadData();
+        const currentMemberNames = team.members.map(m => {
+            const name = typeof m === 'string' ? m : m.name;
+            return name.toLowerCase();
+        });
+        
+        const availableUsers = users.filter(u => {
+            const userName = u.name.toLowerCase();
+            const isLeader = u.name === team.leader;
+            const alreadyInTeam = currentMemberNames.includes(userName);
+            const isEmployeeOrLeader = u.role === 'employee' || u.role === 'leader';
+            
+            return !isLeader && !alreadyInTeam && isEmployeeOrLeader;
+        });
         
         availableMembersContainer.innerHTML = '';
         if (availableUsers.length === 0) {
@@ -1206,9 +1300,10 @@ function openManageTeamMembers(teamId) {
             availableUsers.forEach(user => {
                 const checkboxItem = document.createElement('div');
                 checkboxItem.className = 'member-checkbox-item';
+                checkboxItem.style.cssText = 'display: flex; align-items: center; gap: 8px; padding: 8px; border-radius: 6px; transition: background-color 0.2s;';
                 checkboxItem.innerHTML = `
-                    <input type="checkbox" id="available-member-${user.name}" value="${user.name}" data-email="${user.email || ''}">
-                    <label for="available-member-${user.name}" style="cursor: pointer; flex: 1;">
+                    <input type="checkbox" id="available-member-${user.name.replace(/\s+/g, '-')}" value="${user.name.replace(/"/g, '&quot;')}" data-email="${(user.email || '').replace(/"/g, '&quot;')}" style="width: 18px; height: 18px; cursor: pointer; accent-color: #e63946;">
+                    <label for="available-member-${user.name.replace(/\s+/g, '-')}" style="cursor: pointer; flex: 1;">
                         <div style="font-weight: 600; color: #333;">${user.name}</div>
                         ${user.email ? `<div style="font-size: 12px; color: #999;">${user.email}</div>` : ''}
                     </label>
@@ -1221,7 +1316,17 @@ function openManageTeamMembers(teamId) {
     selectedMembersToAdd = [];
     newEmployeesToAdd = []; // Reset new employees list
     updateNewEmployeesList(); // Clear the new employees display
-    if (modal) modal.classList.remove('hidden');
+    
+    // Show the modal
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+        // Prevent body scroll when modal is open
+        document.body.style.overflow = 'hidden';
+    } else {
+        console.error('Modal element not found!');
+        alert('Error: Modal not found. Please refresh the page.');
+    }
 }
 
 function addNewEmployee() {
@@ -1243,7 +1348,9 @@ function addNewEmployee() {
     }
     
     // Check if already a team member
-    const team = teams.find(t => t.id == currentEditingTeamId);
+    const team = teams.find(t => {
+        return String(t.id) === String(currentEditingTeamId) || t.id == currentEditingTeamId;
+    });
     if (team && team.members) {
         const currentMemberNames = team.members.map(m => typeof m === 'string' ? m : m.name);
         if (currentMemberNames.some(n => n.toLowerCase() === name.toLowerCase())) {
@@ -1299,17 +1406,57 @@ function removeNewEmployee(index) {
 }
 
 function removeTeamMember(index) {
-    if (!currentEditingTeamId) return;
-    const team = teams.find(t => t.id == currentEditingTeamId); // Use == for type coercion
-    if (!team || !team.members) return;
+    if (!currentEditingTeamId) {
+        alert('Error: No team selected.');
+        return;
+    }
     
+    reloadData();
+    const team = teams.find(t => {
+        return String(t.id) === String(currentEditingTeamId) || t.id == currentEditingTeamId;
+    });
+    if (!team || !team.members) {
+        alert('Error: Team not found.');
+        return;
+    }
+    
+    const memberToRemove = team.members[index];
+    if (!memberToRemove) {
+        alert('Error: Member not found.');
+        return;
+    }
+    
+    const memberName = typeof memberToRemove === 'string' ? memberToRemove : memberToRemove.name;
+    
+    // Prevent removing the leader
+    if (memberName === team.leader) {
+        alert('Cannot remove the team leader. Please assign a new leader first.');
+        return;
+    }
+    
+    // Confirm removal
+    if (!confirm(`Are you sure you want to remove ${memberName} from this team?`)) {
+        return;
+    }
+    
+    // Remove the member
     team.members.splice(index, 1);
-    openManageTeamMembers(currentEditingTeamId); // Refresh the modal
+    
+    // Save immediately
+    localStorage.setItem('teams', JSON.stringify(teams));
+    
+    // Refresh the modal to show updated list
+    openManageTeamMembers(currentEditingTeamId);
 }
 
 function closeManageTeamMembersModal() {
     const modal = document.getElementById('manageTeamMembersModal');
-    if (modal) modal.classList.add('hidden');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+        // Restore body scroll
+        document.body.style.overflow = '';
+    }
     currentEditingTeamId = null;
     selectedMembersToAdd = [];
     newEmployeesToAdd = [];
@@ -1324,25 +1471,32 @@ function closeManageTeamMembersModal() {
 function saveTeamMembers() {
     if (!currentEditingTeamId) {
         console.error('No team ID set for editing');
+        alert('Error: No team selected.');
         return;
     }
     
     // Reload data first to get latest users
     reloadData();
     
-    // Find team after reloading data
-    const team = teams.find(t => t.id == currentEditingTeamId); // Use == for type coercion
+    // Find team after reloading data - handle different ID types
+    const team = teams.find(t => {
+        return String(t.id) === String(currentEditingTeamId) || t.id == currentEditingTeamId;
+    });
+    
     if (!team) {
         console.error('Team not found with ID:', currentEditingTeamId);
         alert('Error: Team not found. Please try again.');
         return;
     }
     
-    // Get selected members to add
+    // Initialize members array if it doesn't exist
+    if (!team.members) team.members = [];
+    
+    // Get selected members to add from checkboxes
     const checkboxes = document.querySelectorAll('#availableMembersContainer input[type="checkbox"]:checked');
     const newMembers = Array.from(checkboxes).map(cb => {
         const name = cb.value;
-        const email = cb.getAttribute('data-email');
+        const email = cb.getAttribute('data-email') || '';
         const user = users.find(u => u.name === name);
         return { 
             name, 
@@ -1350,9 +1504,6 @@ function saveTeamMembers() {
             role: user?.role || 'employee'
         };
     });
-    
-    // Initialize members array if it doesn't exist
-    if (!team.members) team.members = [];
     
     // Ensure leader is in members if not already
     if (team.leader) {
@@ -1370,11 +1521,11 @@ function saveTeamMembers() {
         }
     }
     
-    // Add selected existing members
+    // Add selected existing members (from checkboxes)
     newMembers.forEach(newMember => {
         const exists = team.members.some(m => {
             const memberName = typeof m === 'string' ? m : m.name;
-            return memberName === newMember.name;
+            return memberName.toLowerCase() === newMember.name.toLowerCase();
         });
         if (!exists) {
             team.members.push(newMember);
@@ -1384,7 +1535,10 @@ function saveTeamMembers() {
     // Add new employees (create user accounts for them)
     newEmployeesToAdd.forEach(newEmp => {
         // Check if user already exists
-        let existingUser = users.find(u => u.name.toLowerCase() === newEmp.name.toLowerCase() || u.email === newEmp.email);
+        let existingUser = users.find(u => 
+            u.name.toLowerCase() === newEmp.name.toLowerCase() || 
+            u.email.toLowerCase() === newEmp.email.toLowerCase()
+        );
         
         if (!existingUser) {
             // Create new user account
@@ -1396,7 +1550,6 @@ function saveTeamMembers() {
                 role: 'employee'
             };
             users.push(newUser);
-            localStorage.setItem('users', JSON.stringify(users));
         }
         
         // Add to team members
@@ -1430,6 +1583,81 @@ function saveTeamMembers() {
     alert('Team members updated successfully!');
 }
 
+// Add Employee Functions
+function openAddEmployeeModal() {
+    const modal = document.getElementById('addEmployeeModal');
+    if (modal) modal.classList.remove('hidden');
+}
+
+function closeAddEmployeeModal() {
+    const modal = document.getElementById('addEmployeeModal');
+    if (modal) modal.classList.add('hidden');
+    const form = document.getElementById('addEmployeeForm');
+    if (form) form.reset();
+    // Reset password to default
+    const passwordInput = document.getElementById('employeePassword');
+    if (passwordInput) passwordInput.value = 'password123';
+}
+
+function handleAddEmployee(event) {
+    event.preventDefault();
+    
+    const nameInput = document.getElementById('employeeName');
+    const emailInput = document.getElementById('employeeEmail');
+    const passwordInput = document.getElementById('employeePassword');
+    
+    if (!nameInput || !emailInput || !passwordInput) {
+        alert('Error: Form fields not found.');
+        return;
+    }
+    
+    const name = nameInput.value.trim();
+    const email = emailInput.value.trim();
+    const password = passwordInput.value.trim();
+    
+    if (!name || !email || !password) {
+        alert('Please fill in all required fields.');
+        return;
+    }
+    
+    // Check if email already exists
+    reloadData();
+    const existingUser = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+    if (existingUser) {
+        alert('An employee with this email already exists.');
+        return;
+    }
+    
+    // Check if name already exists
+    const existingName = users.find(u => u.name.toLowerCase() === name.toLowerCase());
+    if (existingName) {
+        alert('An employee with this name already exists.');
+        return;
+    }
+    
+    // Create new employee
+    const newEmployee = {
+        id: `employee-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        name: name,
+        email: email,
+        password: password,
+        role: 'employee'
+    };
+    
+    users.push(newEmployee);
+    localStorage.setItem('users', JSON.stringify(users));
+    
+    // Trigger storage event for other tabs
+    window.dispatchEvent(new Event('storage'));
+    
+    // Refresh data
+    reloadData();
+    
+    // Close modal
+    closeAddEmployeeModal();
+    
+    alert(`Employee "${name}" has been added successfully!`);
+}
 
 // Logout functionality
 const logoutBtn = document.querySelector('.sidebar-item.logout');
@@ -1669,7 +1897,25 @@ document.addEventListener('DOMContentLoaded', function() {
     window.addEventListener('localStorageUpdated', function() {
         reloadData();
         renderTeams();
-  });
+    });
+    
+    // Close modal on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const manageModal = document.getElementById('manageTeamMembersModal');
+            if (manageModal && !manageModal.classList.contains('hidden')) {
+                closeManageTeamMembersModal();
+            }
+            const createModal = document.getElementById('createTeamModal');
+            if (createModal && !createModal.classList.contains('hidden')) {
+                closeCreateTeamModal();
+            }
+            const addEmployeeModal = document.getElementById('addEmployeeModal');
+            if (addEmployeeModal && !addEmployeeModal.classList.contains('hidden')) {
+                closeAddEmployeeModal();
+            }
+        }
+    });
 });
 </script>
 </body>
