@@ -718,7 +718,13 @@
     }
     
     // Initialize all demo data on page load
+    // Run immediately
     initializeDemoData();
+    
+    // Also ensure it runs when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initializeDemoData);
+    }
 
     // Demo account click handlers
     const demoAccountItems = document.querySelectorAll('.demo-account-item');
@@ -790,8 +796,8 @@
     const signupBtn = document.getElementById('signup-btn');
 
 
-    // Login form submission
-    loginForm.addEventListener('submit', function(e) {
+      // Login form submission
+      loginForm.addEventListener('submit', function(e) {
       e.preventDefault();
       
       const email = emailInput.value.trim();
@@ -871,10 +877,10 @@
           errorMessage.textContent = 'Unknown user role';
           errorMessage.classList.add('show');
       }
-    });
+      });
 
-    // Signup form submission
-    signupForm.addEventListener('submit', function(e) {
+      // Signup form submission
+      signupForm.addEventListener('submit', function(e) {
       e.preventDefault();
       
       const name = signupNameInput.value.trim();
