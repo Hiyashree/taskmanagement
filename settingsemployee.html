@@ -73,6 +73,63 @@
             border-color: #404040 !important;
         }
 
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                position: relative;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid #e0e0e0;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 16px;
+            }
+
+            .top-bar {
+                padding: 12px 16px;
+                flex-wrap: wrap;
+            }
+
+            .user-info {
+                margin-top: 8px;
+                width: 100%;
+            }
+
+            .content-area {
+                padding: 16px;
+            }
+
+            .settings-section {
+                padding: 16px !important;
+            }
+
+            .settings-section h2 {
+                font-size: 16px !important;
+            }
+
+            button {
+                width: 100%;
+                margin-top: 8px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 12px;
+            }
+
+            .settings-section {
+                padding: 12px !important;
+            }
+
+            input, select {
+                width: 100% !important;
+            }
+        }
+
         .app-container {
             display: flex;
             min-height: 100vh;
@@ -548,29 +605,7 @@
                 const html = document.documentElement;
                 const toggleSpan = themeToggle.querySelector('span');
                 
-                if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                    html.classList.add('dark');
-                    if (toggleSpan) {
-                        themeToggle.style.background = '#4f46e5';
-                        toggleSpan.style.transform = 'translateX(24px)';
-                    }
-                }
-                
-                themeToggle.addEventListener('click', function() {
-                    html.classList.toggle('dark');
-                    const isDark = html.classList.contains('dark');
-                    // Save to role-specific settings
-                    const settings = JSON.parse(localStorage.getItem('settings_employee') || '{}');
-                    settings.darkMode = isDark;
-                    localStorage.setItem('settings_employee', JSON.stringify(settings));
-                    window.dispatchEvent(new Event('settingsUpdated'));
-                    this.style.background = isDark ? '#4f46e5' : '#e0e0e0';
-                    if (toggleSpan) {
-                        toggleSpan.style.transform = isDark ? 'translateX(24px)' : 'translateX(0)';
-                    }
-                });
-                
-                // Load saved dark mode setting
+                // Load saved dark mode setting first (priority)
                 const settings = JSON.parse(localStorage.getItem('settings_employee') || '{}');
                 if (settings.darkMode) {
                     html.classList.add('dark');
@@ -578,19 +613,63 @@
                     if (toggleSpan) {
                         toggleSpan.style.transform = 'translateX(24px)';
                     }
+                } else {
+                    // Fallback to old localStorage.theme if settings_employee doesn't have darkMode
+                    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                        html.classList.add('dark');
+                        if (toggleSpan) {
+                            themeToggle.style.background = '#4f46e5';
+                            toggleSpan.style.transform = 'translateX(24px)';
+                        }
+                        // Save to settings_employee for consistency
+                        settings.darkMode = true;
+                        localStorage.setItem('settings_employee', JSON.stringify(settings));
+                    } else {
+                        html.classList.remove('dark');
+                        themeToggle.style.background = '#e0e0e0';
+                        if (toggleSpan) {
+                            toggleSpan.style.transform = 'translateX(0)';
+                        }
+                    }
                 }
+                
+                themeToggle.addEventListener('click', function() {
+                    html.classList.toggle('dark');
+                    const isDark = html.classList.contains('dark');
+                    // Save to role-specific settings
+                    const currentSettings = JSON.parse(localStorage.getItem('settings_employee') || '{}');
+                    currentSettings.darkMode = isDark;
+                    localStorage.setItem('settings_employee', JSON.stringify(currentSettings));
+                    window.dispatchEvent(new Event('settingsUpdated'));
+                    this.style.background = isDark ? '#4f46e5' : '#e0e0e0';
+                    if (toggleSpan) {
+                        toggleSpan.style.transform = isDark ? 'translateX(24px)' : 'translateX(0)';
+                    }
+                });
             }
             
             // Save Appearance Settings
             const saveAppearanceBtn = document.getElementById('saveAppearanceBtn');
             if (saveAppearanceBtn) {
-                saveAppearanceBtn.addEventListener('click', function() {
+                saveAppearanceBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
                     const html = document.documentElement;
                     const isDark = html.classList.contains('dark');
                     const settings = JSON.parse(localStorage.getItem('settings_employee') || '{}');
                     settings.darkMode = isDark;
                     localStorage.setItem('settings_employee', JSON.stringify(settings));
                     window.dispatchEvent(new Event('settingsUpdated'));
+                    
+                    // Update toggle visual state
+                    const themeToggle = document.getElementById('themeToggle');
+                    if (themeToggle) {
+                        themeToggle.style.background = isDark ? '#4f46e5' : '#e0e0e0';
+                        const toggleSpan = themeToggle.querySelector('span');
+                        if (toggleSpan) {
+                            toggleSpan.style.transform = isDark ? 'translateX(24px)' : 'translateX(0)';
+                        }
+                    }
+                    
                     alert('Appearance settings saved successfully!');
                 });
             }

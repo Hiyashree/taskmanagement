@@ -553,29 +553,7 @@
                 const html = document.documentElement;
                 const toggleSpan = themeToggle.querySelector('span');
                 
-                if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                    html.classList.add('dark');
-                    if (toggleSpan) {
-                        themeToggle.style.background = '#4f46e5';
-                        toggleSpan.style.transform = 'translateX(24px)';
-                    }
-                }
-                
-                themeToggle.addEventListener('click', function() {
-                    html.classList.toggle('dark');
-                    const isDark = html.classList.contains('dark');
-                    // Save to role-specific settings
-                    const settings = JSON.parse(localStorage.getItem('settings_admin') || '{}');
-                    settings.darkMode = isDark;
-                    localStorage.setItem('settings_admin', JSON.stringify(settings));
-                    window.dispatchEvent(new Event('settingsUpdated'));
-                    this.style.background = isDark ? '#4f46e5' : '#e0e0e0';
-                    if (toggleSpan) {
-                        toggleSpan.style.transform = isDark ? 'translateX(24px)' : 'translateX(0)';
-                    }
-                });
-                
-                // Load saved dark mode setting
+                // Load saved dark mode setting first (priority)
                 const settings = JSON.parse(localStorage.getItem('settings_admin') || '{}');
                 if (settings.darkMode) {
                     html.classList.add('dark');
@@ -583,31 +561,79 @@
                     if (toggleSpan) {
                         toggleSpan.style.transform = 'translateX(24px)';
                     }
+                } else {
+                    // Fallback to old localStorage.theme if settings_admin doesn't have darkMode
+                    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                        html.classList.add('dark');
+                        if (toggleSpan) {
+                            themeToggle.style.background = '#4f46e5';
+                            toggleSpan.style.transform = 'translateX(24px)';
+                        }
+                        // Save to settings_admin for consistency
+                        settings.darkMode = true;
+                        localStorage.setItem('settings_admin', JSON.stringify(settings));
+                    } else {
+                        html.classList.remove('dark');
+                        themeToggle.style.background = '#e0e0e0';
+                        if (toggleSpan) {
+                            toggleSpan.style.transform = 'translateX(0)';
+                        }
+                    }
                 }
+                
+                themeToggle.addEventListener('click', function() {
+                    html.classList.toggle('dark');
+                    const isDark = html.classList.contains('dark');
+                    // Save to role-specific settings
+                    const currentSettings = JSON.parse(localStorage.getItem('settings_admin') || '{}');
+                    currentSettings.darkMode = isDark;
+                    localStorage.setItem('settings_admin', JSON.stringify(currentSettings));
+                    window.dispatchEvent(new Event('settingsUpdated'));
+                    this.style.background = isDark ? '#4f46e5' : '#e0e0e0';
+                    if (toggleSpan) {
+                        toggleSpan.style.transform = isDark ? 'translateX(24px)' : 'translateX(0)';
+                    }
+                });
             }
             
             // Save Account Settings
             const saveAccountBtn = document.getElementById('saveAccountBtn');
             if (saveAccountBtn) {
-                saveAccountBtn.addEventListener('click', function() {
+                saveAccountBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
                     const nameInput = document.getElementById('settings-name');
                     const emailInput = document.getElementById('settings-email');
                     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
                     
                     if (currentUser && nameInput && emailInput) {
-                        currentUser.name = nameInput.value;
-                        currentUser.email = emailInput.value;
+                        if (!nameInput.value.trim()) {
+                            alert('Name cannot be empty!');
+                            return;
+                        }
+                        if (!emailInput.value.trim() || !emailInput.value.includes('@')) {
+                            alert('Please enter a valid email address!');
+                            return;
+                        }
+                        
+                        currentUser.name = nameInput.value.trim();
+                        currentUser.email = emailInput.value.trim();
                         localStorage.setItem('currentUser', JSON.stringify(currentUser));
                         
                         const users = JSON.parse(localStorage.getItem('users') || '[]');
                         const userIndex = users.findIndex(u => u.id === currentUser.id);
                         if (userIndex !== -1) {
-                            users[userIndex].name = nameInput.value;
-                            users[userIndex].email = emailInput.value;
+                            users[userIndex].name = nameInput.value.trim();
+                            users[userIndex].email = emailInput.value.trim();
                             localStorage.setItem('users', JSON.stringify(users));
                         }
                         
+                        // Update header name
+                        const userNameEl = document.getElementById('headerUserName');
+                        if (userNameEl) userNameEl.textContent = currentUser.name;
+                        
                         alert('Account settings saved successfully!');
+                    } else {
+                        alert('Error: Could not save account settings. Please try again.');
                     }
                 });
             }
@@ -615,13 +641,25 @@
             // Save Appearance Settings
             const saveAppearanceBtn = document.getElementById('saveAppearanceBtn');
             if (saveAppearanceBtn) {
-                saveAppearanceBtn.addEventListener('click', function() {
+                saveAppearanceBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
                     const html = document.documentElement;
                     const isDark = html.classList.contains('dark');
                     const settings = JSON.parse(localStorage.getItem('settings_admin') || '{}');
                     settings.darkMode = isDark;
                     localStorage.setItem('settings_admin', JSON.stringify(settings));
                     window.dispatchEvent(new Event('settingsUpdated'));
+                    
+                    // Update toggle visual state
+                    const themeToggle = document.getElementById('themeToggle');
+                    if (themeToggle) {
+                        themeToggle.style.background = isDark ? '#4f46e5' : '#e0e0e0';
+                        const toggleSpan = themeToggle.querySelector('span');
+                        if (toggleSpan) {
+                            toggleSpan.style.transform = isDark ? 'translateX(24px)' : 'translateX(0)';
+                        }
+                    }
+                    
                     alert('Appearance settings saved successfully!');
                 });
             }
@@ -629,16 +667,22 @@
             // Save Notification Settings
             const saveNotificationsBtn = document.getElementById('saveNotificationsBtn');
             if (saveNotificationsBtn) {
-                saveNotificationsBtn.addEventListener('click', function() {
-                    const emailNotifications = document.getElementById('emailNotifications').checked;
-                    const pushNotifications = document.getElementById('pushNotifications').checked;
-                    const taskReminders = document.getElementById('taskReminders').checked;
+                saveNotificationsBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const emailNotifications = document.getElementById('emailNotifications');
+                    const pushNotifications = document.getElementById('pushNotifications');
+                    const taskReminders = document.getElementById('taskReminders');
+                    
+                    if (!emailNotifications || !pushNotifications || !taskReminders) {
+                        alert('Error: Could not find notification settings. Please refresh the page.');
+                        return;
+                    }
                     
                     const settings = JSON.parse(localStorage.getItem('settings_admin') || '{}');
                     settings.notifications = {
-                        email: emailNotifications,
-                        push: pushNotifications,
-                        reminders: taskReminders
+                        email: emailNotifications.checked,
+                        push: pushNotifications.checked,
+                        reminders: taskReminders.checked
                     };
                     localStorage.setItem('settings_admin', JSON.stringify(settings));
                     alert('Notification settings saved successfully!');
@@ -659,13 +703,19 @@
             // Save Language Settings
             const saveLanguageBtn = document.getElementById('saveLanguageBtn');
             if (saveLanguageBtn) {
-                saveLanguageBtn.addEventListener('click', function() {
-                    const language = document.getElementById('languageSelect').value;
-                    const timezone = document.getElementById('timezoneSelect').value;
+                saveLanguageBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const languageSelect = document.getElementById('languageSelect');
+                    const timezoneSelect = document.getElementById('timezoneSelect');
+                    
+                    if (!languageSelect || !timezoneSelect) {
+                        alert('Error: Could not find language settings. Please refresh the page.');
+                        return;
+                    }
                     
                     const settings = JSON.parse(localStorage.getItem('settings_admin') || '{}');
-                    settings.language = language;
-                    settings.timezone = timezone;
+                    settings.language = languageSelect.value;
+                    settings.timezone = timezoneSelect.value;
                     localStorage.setItem('settings_admin', JSON.stringify(settings));
                     alert('Language settings saved successfully!');
                 });

@@ -722,7 +722,19 @@
             settings.darkMode = isDark;
             localStorage.setItem('settings_leader', JSON.stringify(settings));
             window.dispatchEvent(new Event('settingsUpdated'));
-            showSaveFeedback(saveAppearanceBtn);
+            
+            // Update toggle visual state
+            const themeToggle = document.getElementById('themeToggle');
+            if (themeToggle) {
+                themeToggle.style.background = isDark ? '#4f46e5' : '#e0e0e0';
+                const toggleSpan = themeToggle.querySelector('span');
+                if (toggleSpan) {
+                    toggleSpan.style.transform = isDark ? 'translateX(24px)' : 'translateX(0)';
+                }
+            }
+            
+            const saveAppearanceBtn = document.getElementById('saveAppearanceBtn');
+            if (saveAppearanceBtn) showSaveFeedback(saveAppearanceBtn);
             alert('Appearance settings saved successfully!');
         }
 
