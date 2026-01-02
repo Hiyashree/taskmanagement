@@ -1,0 +1,1687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graphura.in - Billing & Reporting</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        /* Dark Mode Styles */
+        .dark body {
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+        }
+        
+        .dark .sidebar {
+            background-color: #2d2d2d;
+            border-right-color: #404040;
+        }
+        
+        .dark .header {
+            background-color: #2d2d2d;
+            border-bottom-color: #404040;
+        }
+        
+        .dark .sidebar-item {
+            color: #b0b0b0;
+        }
+        
+        .dark .sidebar-item:hover {
+            background-color: #3a3a3a;
+        }
+        
+        .dark .sidebar-item.active {
+            background-color: #3a1a1a;
+            color: #e63946;
+        }
+        
+        .dark [style*="background: #fff"],
+        .dark [style*="background-color: #fff"] {
+            background-color: #2d2d2d !important;
+        }
+        
+        .dark [style*="color: #333"] {
+            color: #e0e0e0 !important;
+        }
+        
+        .dark [style*="color: #666"] {
+            color: #b0b0b0 !important;
+        }
+        
+        .dark [style*="border: 1px solid #e0e0e0"],
+        .dark [style*="border: 2px solid #e0e0e0"] {
+            border-color: #404040 !important;
+        }
+        
+        .dark input[type="text"],
+        .dark input[type="search"],
+        .dark select {
+            background-color: #3a3a3a !important;
+            color: #e0e0e0 !important;
+            border-color: #404040 !important;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background-color: #fff;
+            border-right: 1px solid #e0e0e0;
+            padding: 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-logo {
+            padding: 24px 20px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .graphura-text {
+            display: flex;
+            align-items: center;
+            font-size: 20px;
+            font-weight: 700;
+            color: #000;
+            letter-spacing: -0.5px;
+        }
+
+        .graphura-text .letter-g {
+            position: relative;
+        }
+
+        .graphura-text .letter-r {
+            position: relative;
+        }
+
+        .graphura-text .letter-a {
+            position: relative;
+        }
+
+        .pencil-icon {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+        }
+
+        .pencil-icon.r-pencil {
+            top: -10px;
+            right: -8px;
+            transform: rotate(-15deg);
+        }
+
+        .pencil-icon.a-pencil {
+            top: -10px;
+            right: -8px;
+            transform: rotate(15deg);
+        }
+
+        .logo-tagline {
+            font-size: 9px;
+            color: #666;
+            font-weight: 400;
+            text-align: center;
+            letter-spacing: 0.3px;
+            line-height: 1.4;
+            margin-top: 4px;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 20px 0;
+        }
+
+        .sidebar-item {
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .sidebar-item:hover {
+            background-color: #f5f5f5;
+        }
+
+        .sidebar-item.active {
+            color: #e63946;
+            background-color: #fff5f5;
+            border-left: 3px solid #e63946;
+        }
+
+        .sidebar-item svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .sidebar-item.logout {
+            margin-top: auto;
+            color: #999;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 250px;
+            flex: 1;
+            padding: 0;
+        }
+
+        /* Header */
+        .header {
+            background-color: #fff;
+            padding: 16px 32px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            flex: 1;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #333;
+            min-width: 180px;
+        }
+
+        .search-bar {
+            flex: 1;
+            max-width: 800px;
+            position: relative;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 12px 16px 12px 48px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s;
+            background-color: #f9f9f9;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: #e63946;
+            background-color: #fff;
+            box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.1);
+        }
+
+        .search-bar svg {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            color: #999;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .notification-container {
+            position: relative;
+        }
+
+        .notification-icon {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            color: #666;
+            position: relative;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background-color: #e63946;
+            color: white;
+            border-radius: 10px;
+            padding: 2px 6px;
+            font-size: 10px;
+            font-weight: 600;
+            min-width: 18px;
+            text-align: center;
+            display: none;
+        }
+
+        .notification-badge.show {
+            display: block;
+        }
+
+        .notification-dropdown {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            width: 380px;
+            max-height: 500px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+        }
+
+        .notification-dropdown.show {
+            display: flex;
+        }
+
+        .notification-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notification-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin: 0;
+        }
+
+        .notification-clear {
+            background: none;
+            border: none;
+            color: #e63946;
+            font-size: 14px;
+            cursor: pointer;
+            font-weight: 500;
+            padding: 4px 8px;
+        }
+
+        .notification-clear:hover {
+            text-decoration: underline;
+        }
+
+        .notification-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .notification-item {
+            padding: 16px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            gap: 12px;
+        }
+
+        .notification-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .notification-item.unread {
+            background-color: #fff5f5;
+        }
+
+        .notification-item.unread:hover {
+            background-color: #ffebee;
+        }
+
+        .notification-icon-small {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .notification-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+
+        .notification-message {
+            color: #666;
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 6px;
+        }
+
+        .notification-time {
+            color: #999;
+            font-size: 12px;
+        }
+
+        .notification-empty {
+            padding: 40px 20px;
+            text-align: center;
+            color: #999;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-details {
+            text-align: right;
+        }
+
+        .user-name {
+            font-weight: 500;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .user-role {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Content Area */
+        .content-wrapper {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .content {
+            padding: 32px;
+        }
+
+        .settings-content {
+            padding: 0;
+        }
+
+        .page-header {
+            margin-bottom: 32px;
+        }
+
+        .page-header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .page-header p {
+            color: #666;
+            font-size: 16px;
+        }
+
+        /* Report Cards */
+        .report-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .report-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .report-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .report-card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #e63946 0%, #d62828 100%);
+            color: white;
+        }
+
+        .report-card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .report-card-description {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+
+        .download-btn {
+            width: 100%;
+            padding: 10px 16px;
+            background-color: #e63946;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background-color 0.2s;
+        }
+
+        .download-btn:hover {
+            background-color: #d62828;
+        }
+
+        .download-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Analytics Section */
+        .analytics-section {
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title svg {
+            width: 24px;
+            height: 24px;
+            color: #666;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .chart-container {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            position: relative;
+            height: 300px;
+        }
+
+        .chart-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 16px;
+        }
+
+        /* Filters Section */
+        .filters-section {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 32px;
+        }
+
+        .filters-row {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .filter-input:focus {
+            outline: none;
+            border-color: #e63946;
+            box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.1);
+        }
+
+        .apply-filters-btn {
+            padding: 10px 24px;
+            background-color: #e63946;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .apply-filters-btn:hover {
+            background-color: #d62828;
+        }
+
+        /* Performance Table */
+        .performance-table {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        th {
+            background-color: #f9f9f9;
+            font-weight: 600;
+            color: #333;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .performance-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-excellent {
+            background-color: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .badge-good {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .badge-average {
+            background-color: #fff3e0;
+            color: #f57c00;
+        }
+
+        .badge-poor {
+            background-color: #ffebee;
+            color: #d32f2f;
+        }
+
+        .export-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+            justify-content: flex-end;
+        }
+
+        .export-btn {
+            padding: 10px 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background-color: white;
+            color: #333;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .export-btn:hover {
+            border-color: #e63946;
+            color: #e63946;
+        }
+
+        .export-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <div class="logo-container">
+                    <div class="logo-g-wrapper">
+                        <svg class="logo-g-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="graphuraGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#8B2A8B;stop-opacity:1" />
+                                    <stop offset="25%" style="stop-color:#D9468B;stop-opacity:1" />
+                                    <stop offset="50%" style="stop-color:#FF6B9D;stop-opacity:1" />
+                                    <stop offset="75%" style="stop-color:#FFA07A;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#20B2AA;stop-opacity:1" />
+                                </linearGradient>
+                                <pattern id="stripes" patternUnits="userSpaceOnUse" width="4" height="4">
+                                    <path d="M 0,0 L 4,4 M -1,1 L 5,5 M -1,3 L 5,7" stroke="rgba(255,255,255,0.15)" stroke-width="0.5"/>
+                                </pattern>
+                            </defs>
+                            <circle cx="50" cy="50" r="48" fill="url(#graphuraGradient)"/>
+                            <circle cx="50" cy="50" r="48" fill="url(#stripes)"/>
+                            <path d="M 50 20 Q 30 20 20 30 Q 20 50 30 60 L 30 70 Q 20 70 20 80 Q 20 90 30 90 L 70 90 Q 80 90 80 80 L 80 50 Q 80 40 70 40 L 50 40 L 50 30 Q 50 20 40 20 Z" fill="white" opacity="0.95"/>
+                            <path d="M 50 60 L 45 70 L 50 75 L 55 70 Z" fill="rgba(0,0,0,0.2)" stroke="rgba(0,0,0,0.3)" stroke-width="1"/>
+                            <line x1="50" y1="60" x2="50" y2="75" stroke="rgba(0,0,0,0.25)" stroke-width="1"/>
+                            <circle cx="50" cy="72" r="2" fill="rgba(0,0,0,0.3)"/>
+                        </svg>
+                    </div>
+                    <div class="graphura-text">
+                        <span class="letter-g">G</span>
+                        <span class="letter-r">R
+                            <svg class="pencil-icon r-pencil" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <defs>
+                                    <linearGradient id="pencilGradientR" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" style="stop-color:#20B2AA;stop-opacity:1" />
+                                        <stop offset="50%" style="stop-color:#FF6B9D;stop-opacity:1" />
+                                        <stop offset="100%" style="stop-color:#20B2AA;stop-opacity:1" />
+                                    </linearGradient>
+                                </defs>
+                                <path d="M 2 8 L 8 2 L 12 6 L 6 12 Z" fill="url(#pencilGradientR)" stroke="#333" stroke-width="0.5"/>
+                                <path d="M 8 2 L 12 6 L 10 8 L 6 4 Z" fill="white" opacity="0.8"/>
+                                <line x1="4" y1="10" x2="10" y2="4" stroke="#333" stroke-width="0.3"/>
+                                <line x1="5" y1="11" x2="11" y2="5" stroke="#333" stroke-width="0.3"/>
+                                <circle cx="7" cy="9" r="1" fill="#333"/>
+                            </svg>
+                        </span>APHUR<span class="letter-a">A
+                            <svg class="pencil-icon a-pencil" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M 2 8 L 8 2 L 12 6 L 6 12 Z" fill="white" stroke="#333" stroke-width="0.5"/>
+                                <path d="M 8 2 L 12 6 L 10 8 L 6 4 Z" fill="#f0f0f0" opacity="0.9"/>
+                                <line x1="4" y1="10" x2="10" y2="4" stroke="#333" stroke-width="0.3"/>
+                                <line x1="5" y1="11" x2="11" y2="5" stroke="#333" stroke-width="0.3"/>
+                                <circle cx="7" cy="9" r="1" fill="#333"/>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="logo-tagline">Create Bold . Edit Smart . Design Loud</div>
+            </div>
+            <div class="sidebar-nav">
+                <a href="admin.html" class="sidebar-item">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                    </svg>
+                    <span>Dashboard</span>
+                </a>
+                <a href="summaryadmin.html" class="sidebar-item">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                    </svg>
+                    <span>Projects</span>
+                </a>
+                <a href="tasksadmin.html" class="sidebar-item">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                    </svg>
+                    <span>Tasks</span>
+                </a>
+                <a href="billing.html" class="sidebar-item active">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                    <span>Billing & Reports</span>
+                </a>
+                <a href="teamadmin.html" class="sidebar-item">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                    <span>Teams</span>
+                </a>
+                <a href="calendaradmin.html" class="sidebar-item">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    <span>Calendar</span>
+                </a>
+                <a href="settingsadmin.html" class="sidebar-item">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    <span>Settings</span>
+                </a>
+                <a href="#" class="sidebar-item logout">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                    </svg>
+                    <span>Log Out</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <h1 class="page-title">Billing & Reporting</h1>
+                    <div class="search-bar">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        <input type="text" id="searchInput" placeholder="Search reports, employees, or projects...">
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="notification-container">
+                        <svg class="notification-icon" id="notificationIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                        </svg>
+                        <span class="notification-badge" id="notificationBadge">0</span>
+                        <div class="notification-dropdown" id="notificationDropdown">
+                            <div class="notification-header">
+                                <h3>Notifications</h3>
+                                <button class="notification-clear" id="clearAllNotifications">Clear all</button>
+                            </div>
+                            <div class="notification-list" id="notificationList">
+                                <!-- Notifications will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="user-info">
+                        <div class="user-details">
+                            <div class="user-name">Admin User</div>
+                            <div class="user-role">Administrator</div>
+                        </div>
+                        <div class="user-avatar">AD</div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Wrapper -->
+            <div class="content-wrapper">
+                <div class="content dashboard-content" id="dashboardContent">
+                <div class="page-header">
+                    <h1>Billing & Reporting</h1>
+                    <p>Track project costs, generate reports, and analyze team performance.</p>
+                </div>
+
+                <!-- Report Cards -->
+                <div class="report-cards">
+                    <div class="report-card">
+                        <div class="report-card-icon">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 24px; height: 24px;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                        </div>
+                        <div class="report-card-title">Employee Monthly Report</div>
+                        <div class="report-card-description">Download detailed monthly task reports for any employee including completed tasks, time spent, and performance metrics.</div>
+                        <button class="download-btn" onclick="downloadEmployeeReport()">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                            </svg>
+                            Download Report
+                        </button>
+                    </div>
+
+                    <div class="report-card">
+                        <div class="report-card-icon">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 24px; height: 24px;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                        </div>
+                        <div class="report-card-title">Project Completion Summary</div>
+                        <div class="report-card-description">Generate comprehensive project completion reports with timelines, budgets, and team performance analysis.</div>
+                        <button class="download-btn" onclick="downloadProjectSummary()">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                            </svg>
+                            Download Summary
+                        </button>
+                    </div>
+
+                    <div class="report-card">
+                        <div class="report-card-icon">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 24px; height: 24px;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div class="report-card-title">Financial Overview</div>
+                        <div class="report-card-description">View project costs, billing information, and financial analytics across all projects and teams.</div>
+                        <button class="download-btn" onclick="downloadFinancialReport()">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                            </svg>
+                            View Financials
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filters Section -->
+                <div class="filters-section">
+                    <h2 class="section-title">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                        </svg>
+                        Report Filters
+                    </h2>
+                    <div class="filters-row">
+                        <div class="filter-group">
+                            <div class="filter-label">Employee</div>
+                            <select class="filter-input" id="filterEmployee">
+                                <option value="">All Employees</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <div class="filter-label">Project</div>
+                            <select class="filter-input" id="filterProject">
+                                <option value="">All Projects</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <div class="filter-label">Date From</div>
+                            <input type="date" class="filter-input" id="dateFrom">
+                        </div>
+                        <div class="filter-group">
+                            <div class="filter-label">Date To</div>
+                            <input type="date" class="filter-input" id="dateTo">
+                        </div>
+                        <button class="apply-filters-btn" onclick="applyFilters()">Apply Filters</button>
+                    </div>
+                </div>
+
+                <!-- Analytics Section -->
+                <div class="analytics-section">
+                    <h2 class="section-title">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                        Team Performance Analytics
+                    </h2>
+                    <div class="charts-grid">
+                        <div class="chart-container">
+                            <div class="chart-title">Task Completion Rate</div>
+                            <canvas id="completionChart"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <div class="chart-title">Project Progress</div>
+                            <canvas id="progressChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="charts-grid">
+                        <div class="chart-container">
+                            <div class="chart-title">Monthly Task Trends</div>
+                            <canvas id="trendsChart"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <div class="chart-title">Team Performance Distribution</div>
+                            <canvas id="performanceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Performance Table -->
+                <div class="performance-table">
+                    <h2 class="section-title">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                        Team Performance Summary
+                    </h2>
+                    <table id="performanceTable">
+                        <thead>
+                            <tr>
+                                <th>Employee</th>
+                                <th>Total Tasks</th>
+                                <th>Completed</th>
+                                <th>In Progress</th>
+                                <th>Completion Rate</th>
+                                <th>Avg. Time/Task</th>
+                                <th>Performance</th>
+                            </tr>
+                        </thead>
+                        <tbody id="performanceTableBody">
+                            <!-- Performance data will be loaded here -->
+                        </tbody>
+                    </table>
+                    <div class="export-actions">
+                        <button class="export-btn" onclick="exportToCSV()">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            Export to CSV
+                        </button>
+                        <button class="export-btn" onclick="exportToPDF()">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                            </svg>
+                            Export to PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load and apply settings (dark mode, etc.)
+        function loadSettings() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (!currentUser) return;
+            const role = currentUser.role;
+            const settingsKey = 'settings_' + role;
+            const settings = JSON.parse(localStorage.getItem(settingsKey) || '{}');
+            if (settings.darkMode) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        }
+        loadSettings();
+        window.addEventListener('storage', function(e) {
+            if (e.key && e.key.startsWith('settings_')) loadSettings();
+        });
+        window.addEventListener('settingsUpdated', loadSettings);
+        
+        // Load data from localStorage
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        let projects = JSON.parse(localStorage.getItem('projects')) || [];
+        let teams = JSON.parse(localStorage.getItem('teams')) || [];
+
+        // Chart instances to destroy before recreating
+        let chartInstances = {};
+
+        // Reload data function
+        function reloadData() {
+            tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            projects = JSON.parse(localStorage.getItem('projects')) || [];
+            teams = JSON.parse(localStorage.getItem('teams')) || [];
+        }
+
+        // Initialize filters
+        function initializeFilters() {
+            const employeeSelect = document.getElementById('filterEmployee');
+            const projectSelect = document.getElementById('filterProject');
+
+            // Get unique employees
+            const employees = [...new Set(tasks.map(t => t.assignedTo).filter(e => e))];
+            employees.forEach(emp => {
+                const option = document.createElement('option');
+                option.value = emp;
+                option.textContent = emp;
+                employeeSelect.appendChild(option);
+            });
+
+            // Get projects
+            projects.forEach(project => {
+                const option = document.createElement('option');
+                option.value = project.id;
+                option.textContent = project.name;
+                projectSelect.appendChild(option);
+            });
+
+            // Set default dates (current month)
+            const now = new Date();
+            const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+            const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+            document.getElementById('dateFrom').value = firstDay.toISOString().split('T')[0];
+            document.getElementById('dateTo').value = lastDay.toISOString().split('T')[0];
+        }
+
+        // Calculate performance metrics
+        function calculatePerformance() {
+            const employees = [...new Set(tasks.map(t => t.assignedTo).filter(e => e))];
+            const performanceData = [];
+
+            employees.forEach(emp => {
+                const empTasks = tasks.filter(t => t.assignedTo === emp);
+                const total = empTasks.length;
+                const completed = empTasks.filter(t => t.status === 'Completed').length;
+                const inProgress = empTasks.filter(t => t.status === 'In Progress').length;
+                const completionRate = total > 0 ? ((completed / total) * 100).toFixed(1) : 0;
+                
+                // Calculate average time based on task completion (simplified calculation)
+                const avgTime = total > 0 ? Math.floor(completed * 2 + inProgress) : 0;
+
+                let performanceBadge = 'badge-poor';
+                if (completionRate >= 80) performanceBadge = 'badge-excellent';
+                else if (completionRate >= 60) performanceBadge = 'badge-good';
+                else if (completionRate >= 40) performanceBadge = 'badge-average';
+
+                performanceData.push({
+                    employee: emp,
+                    total,
+                    completed,
+                    inProgress,
+                    completionRate,
+                    avgTime,
+                    performance: performanceBadge
+                });
+            });
+
+            return performanceData.sort((a, b) => parseFloat(b.completionRate) - parseFloat(a.completionRate));
+        }
+
+        // Render performance table
+        function renderPerformanceTable() {
+            const tbody = document.getElementById('performanceTableBody');
+            const performanceData = calculatePerformance();
+
+            tbody.innerHTML = performanceData.map(emp => `
+                <tr>
+                    <td><strong>${emp.employee}</strong></td>
+                    <td>${emp.total}</td>
+                    <td>${emp.completed}</td>
+                    <td>${emp.inProgress}</td>
+                    <td>${emp.completionRate}%</td>
+                    <td>${emp.avgTime}h</td>
+                    <td>
+                        <span class="performance-badge ${emp.performance}">
+                            ${emp.completionRate >= 80 ? 'Excellent' : emp.completionRate >= 60 ? 'Good' : emp.completionRate >= 40 ? 'Average' : 'Needs Improvement'}
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Initialize charts
+        function initializeCharts() {
+            // Destroy existing charts before creating new ones
+            Object.keys(chartInstances).forEach(key => {
+                if (chartInstances[key]) {
+                    chartInstances[key].destroy();
+                }
+            });
+            chartInstances = {};
+
+            // Task Completion Rate Chart
+            const completionCtx = document.getElementById('completionChart');
+            if (!completionCtx) return;
+            
+            chartInstances.completion = new Chart(completionCtx.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Completed', 'In Progress', 'Pending'],
+                    datasets: [{
+                        data: [
+                            tasks.filter(t => t.status === 'Completed').length,
+                            tasks.filter(t => t.status === 'In Progress').length,
+                            tasks.filter(t => t.status === 'Pending' || !t.status).length
+                        ],
+                        backgroundColor: ['#388e3c', '#1976d2', '#f57c00']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // Project Progress Chart
+            const progressCtx = document.getElementById('progressChart');
+            if (!progressCtx) return;
+            
+            const projectData = projects.map(p => {
+                const projectTasks = tasks.filter(t => t.projectId === p.id);
+                const completed = projectTasks.filter(t => t.status === 'Completed').length;
+                return projectTasks.length > 0 ? (completed / projectTasks.length * 100) : 0;
+            });
+
+            chartInstances.progress = new Chart(progressCtx.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: projects.map(p => p.name),
+                    datasets: [{
+                        label: 'Completion %',
+                        data: projectData,
+                        backgroundColor: '#e63946'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+
+            // Monthly Trends Chart - using real task data
+            const trendsCtx = document.getElementById('trendsChart');
+            if (!trendsCtx) return;
+            
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const now = new Date();
+            const currentMonth = now.getMonth();
+            const monthlyLabels = months.slice(Math.max(0, currentMonth - 5), currentMonth + 1);
+            
+            // Calculate actual completed tasks per month
+            const monthlyData = monthlyLabels.map((monthLabel) => {
+                const monthIndex = months.indexOf(monthLabel);
+                const year = now.getFullYear();
+                const startOfMonth = new Date(year, monthIndex, 1);
+                const endOfMonth = new Date(year, monthIndex + 1, 0, 23, 59, 59);
+                
+                // Count tasks completed in this month (using dueDate or status)
+                const completedInMonth = tasks.filter(t => {
+                    if (t.status !== 'Completed') return false;
+                    // If task has dueDate, check if it's in this month range
+                    if (t.dueDate) {
+                        try {
+                            const dueDate = new Date(t.dueDate);
+                            return dueDate >= startOfMonth && dueDate <= endOfMonth;
+                        } catch (e) {
+                            return false;
+                        }
+                    }
+                    return false;
+                }).length;
+                
+                return completedInMonth;
+            });
+
+            chartInstances.trends = new Chart(trendsCtx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: months.slice(Math.max(0, currentMonth - 5), currentMonth + 1),
+                    datasets: [{
+                        label: 'Tasks Completed',
+                        data: monthlyData,
+                        borderColor: '#e63946',
+                        backgroundColor: 'rgba(230, 57, 70, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Performance Distribution Chart
+            const performanceCtx = document.getElementById('performanceChart');
+            if (!performanceCtx) return;
+            
+            const performanceData = calculatePerformance();
+            const distribution = {
+                excellent: performanceData.filter(p => parseFloat(p.completionRate) >= 80).length,
+                good: performanceData.filter(p => parseFloat(p.completionRate) >= 60 && parseFloat(p.completionRate) < 80).length,
+                average: performanceData.filter(p => parseFloat(p.completionRate) >= 40 && parseFloat(p.completionRate) < 60).length,
+                poor: performanceData.filter(p => parseFloat(p.completionRate) < 40).length
+            };
+
+            chartInstances.performance = new Chart(performanceCtx.getContext('2d'), {
+                type: 'pie',
+                data: {
+                    labels: ['Excellent', 'Good', 'Average', 'Needs Improvement'],
+                    datasets: [{
+                        data: [distribution.excellent, distribution.good, distribution.average, distribution.poor],
+                        backgroundColor: ['#388e3c', '#1976d2', '#f57c00', '#d32f2f']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Download functions
+        function downloadEmployeeReport() {
+            reloadData(); // Ensure we have latest data
+            const employee = document.getElementById('filterEmployee').value;
+            const dateFrom = document.getElementById('dateFrom').value;
+            const dateTo = document.getElementById('dateTo').value;
+            
+            let filteredTasks = tasks;
+            if (employee) {
+                filteredTasks = filteredTasks.filter(t => t.assignedTo === employee);
+            }
+            if (dateFrom) {
+                filteredTasks = filteredTasks.filter(t => !t.createdDate || new Date(t.createdDate) >= new Date(dateFrom));
+            }
+            if (dateTo) {
+                filteredTasks = filteredTasks.filter(t => !t.createdDate || new Date(t.createdDate) <= new Date(dateTo));
+            }
+
+            const csv = generateEmployeeCSV(filteredTasks, employee || 'All Employees');
+            downloadCSV(csv, `employee_report_${new Date().toISOString().split('T')[0]}.csv`);
+        }
+
+        function downloadProjectSummary() {
+            reloadData(); // Ensure we have latest data
+            const projectId = document.getElementById('filterProject').value;
+            const dateFrom = document.getElementById('dateFrom').value;
+            const dateTo = document.getElementById('dateTo').value;
+
+            let filteredProjects = projects;
+            if (projectId) {
+                filteredProjects = filteredProjects.filter(p => p.id == projectId);
+            }
+
+            const csv = generateProjectCSV(filteredProjects, tasks);
+            downloadCSV(csv, `project_summary_${new Date().toISOString().split('T')[0]}.csv`);
+        }
+
+        function downloadFinancialReport() {
+            reloadData(); // Ensure we have latest data
+            const csv = generateFinancialCSV(projects, tasks);
+            downloadCSV(csv, `financial_report_${new Date().toISOString().split('T')[0]}.csv`);
+        }
+
+        function generateEmployeeCSV(tasks, employeeName) {
+            let csv = `Employee Monthly Task Report\n`;
+            csv += `Employee: ${employeeName}\n`;
+            csv += `Generated: ${new Date().toLocaleString()}\n\n`;
+            csv += `Task Title,Project,Status,Due Date,Completed Date\n`;
+            
+            tasks.forEach(task => {
+                const project = projects.find(p => p.id === task.projectId);
+                csv += `"${task.title || ''}","${project ? project.name : 'Standalone'}","${task.status || 'Pending'}","${task.dueDate || ''}","${task.status === 'Completed' ? (task.completedDate || 'N/A') : 'N/A'}"\n`;
+            });
+
+            return csv;
+        }
+
+        function generateProjectCSV(projects, tasks) {
+            let csv = `Project Completion Summary\n`;
+            csv += `Generated: ${new Date().toLocaleString()}\n\n`;
+            csv += `Project Name,Total Tasks,Completed,In Progress,Pending,Completion %\n`;
+            
+            projects.forEach(project => {
+                const projectTasks = tasks.filter(t => t.projectId === project.id);
+                const total = projectTasks.length;
+                const completed = projectTasks.filter(t => t.status === 'Completed').length;
+                const inProgress = projectTasks.filter(t => t.status === 'In Progress').length;
+                const pending = projectTasks.filter(t => t.status === 'Pending' || !t.status).length;
+                const completionRate = total > 0 ? ((completed / total) * 100).toFixed(1) : 0;
+                
+                csv += `"${project.name}",${total},${completed},${inProgress},${pending},${completionRate}%\n`;
+            });
+
+            return csv;
+        }
+
+        function generateFinancialCSV(projects, tasks) {
+            let csv = `Financial Overview Report\n`;
+            csv += `Generated: ${new Date().toLocaleString()}\n\n`;
+            csv += `Project Name,Total Tasks,Completed Tasks,Estimated Hours,Cost per Hour,Total Cost\n`;
+            
+            projects.forEach(project => {
+                const projectTasks = tasks.filter(t => t.projectId === project.id);
+                const total = projectTasks.length;
+                const completed = projectTasks.filter(t => t.status === 'Completed').length;
+                const estimatedHours = projectTasks.reduce((sum, t) => sum + (parseInt(t.estimatedHours) || 12), 0);
+                const costPerHour = 50; // Default cost
+                const totalCost = estimatedHours * costPerHour;
+                
+                csv += `"${project.name}",${total},${completed},${estimatedHours},$${costPerHour},$${totalCost}\n`;
+            });
+
+            return csv;
+        }
+
+        function downloadCSV(csv, filename) {
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        function exportToCSV() {
+            reloadData(); // Ensure we have latest data
+            const performanceData = calculatePerformance();
+            let csv = `Team Performance Summary\n`;
+            csv += `Generated: ${new Date().toLocaleString()}\n\n`;
+            csv += `Employee,Total Tasks,Completed,In Progress,Completion Rate,Avg Time/Task,Performance\n`;
+            
+            performanceData.forEach(emp => {
+                csv += `"${emp.employee}",${emp.total},${emp.completed},${emp.inProgress},${emp.completionRate}%,${emp.avgTime}h,"${emp.completionRate >= 80 ? 'Excellent' : emp.completionRate >= 60 ? 'Good' : emp.completionRate >= 40 ? 'Average' : 'Needs Improvement'}"\n`;
+            });
+
+            downloadCSV(csv, `team_performance_${new Date().toISOString().split('T')[0]}.csv`);
+        }
+
+        function exportToPDF() {
+            alert('PDF export functionality will be implemented with a PDF library. For now, please use CSV export.');
+            // In a real implementation, you would use a library like jsPDF or pdfmake
+        }
+
+        function applyFilters() {
+            reloadData();
+            renderPerformanceTable();
+            initializeCharts();
+        }
+
+        // Notification system
+        function loadNotifications() {
+            const notifications = JSON.parse(localStorage.getItem('notifications')) || [];
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            
+            if (!currentUser) return;
+            
+            const userNotifications = currentUser.role === 'admin' 
+                ? notifications
+                : notifications.filter(n => n.targetRole === currentUser.role || n.targetRole === 'all' || (n.targetUser && n.targetUser === currentUser.name));
+            
+            userNotifications.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            const unreadCount = userNotifications.filter(n => !n.read).length;
+            const badge = document.getElementById('notificationBadge');
+            const notificationList = document.getElementById('notificationList');
+            
+            if (badge) {
+                if (unreadCount > 0) {
+                    badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                    badge.classList.add('show');
+                } else {
+                    badge.classList.remove('show');
+                }
+            }
+            
+            if (notificationList) {
+                if (userNotifications.length === 0) {
+                    notificationList.innerHTML = `
+                        <div class="notification-empty">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                            </svg>
+                            <p>No notifications</p>
+                        </div>
+                    `;
+                } else {
+                    notificationList.innerHTML = userNotifications.map(notification => {
+                        const timeAgo = getTimeAgo(new Date(notification.timestamp));
+                        const initials = notification.from ? notification.from.substring(0, 2).toUpperCase() : 'AD';
+                        const unreadClass = !notification.read ? 'unread' : '';
+                        
+                        return `
+                            <div class="notification-item ${unreadClass}" data-id="${notification.id}">
+                                <div class="notification-icon-small">${initials}</div>
+                                <div class="notification-content">
+                                    <div class="notification-title">${notification.title}</div>
+                                    <div class="notification-message">${notification.message}</div>
+                                    <div class="notification-time">${timeAgo}</div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                    
+                    notificationList.querySelectorAll('.notification-item').forEach(item => {
+                        item.addEventListener('click', function() {
+                            const id = this.dataset.id;
+                            markNotificationAsRead(id);
+                        });
+                    });
+                }
+            }
+        }
+        
+        function markNotificationAsRead(id) {
+            const notifications = JSON.parse(localStorage.getItem('notifications')) || [];
+            const notification = notifications.find(n => n.id === id);
+            if (notification && !notification.read) {
+                notification.read = true;
+                localStorage.setItem('notifications', JSON.stringify(notifications));
+                loadNotifications();
+            }
+        }
+        
+        function clearAllNotifications() {
+            const notifications = JSON.parse(localStorage.getItem('notifications')) || [];
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (!currentUser) return;
+            
+            const updated = currentUser.role === 'admin'
+                ? notifications.map(n => ({ ...n, read: true }))
+                : notifications.map(n => {
+                    if (n.targetRole === currentUser.role || n.targetRole === 'all' || (n.targetUser && n.targetUser === currentUser.name)) {
+                        return { ...n, read: true };
+                    }
+                    return n;
+                });
+            
+            localStorage.setItem('notifications', JSON.stringify(updated));
+            loadNotifications();
+        }
+        
+        function getTimeAgo(date) {
+            const now = new Date();
+            const diff = now - date;
+            const seconds = Math.floor(diff / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+            
+            if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`;
+            if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+            if (minutes > 0) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+            return 'Just now';
+        }
+        
+        // Initialize everything when DOM is ready
+        // Search functionality
+        function performBillingSearch(searchTerm) {
+            const tableRows = document.querySelectorAll('tbody tr, .performance-row');
+            let hasMatches = false;
+            
+            document.querySelectorAll('.no-results-message').forEach(msg => msg.remove());
+            
+            if (!searchTerm) {
+                tableRows.forEach(row => row.style.display = '');
+                return;
+            }
+            
+            tableRows.forEach(row => {
+                const rowText = row.textContent.toLowerCase();
+                const matches = rowText.includes(searchTerm);
+                row.style.display = matches ? '' : 'none';
+                if (matches) hasMatches = true;
+            });
+            
+            if (!hasMatches && searchTerm) {
+                const content = document.querySelector('.content, .dashboard-content');
+                if (content) {
+                    const noResults = document.createElement('div');
+                    noResults.className = 'no-results-message';
+                    noResults.style.cssText = 'text-align: center; padding: 60px 20px; background: white; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-top: 32px;';
+                    noResults.innerHTML = `
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 64px; height: 64px; color: #ccc; margin: 0 auto 16px;">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        <h3 style="font-size: 18px; font-weight: 600; color: #666; margin-bottom: 8px;">No results found</h3>
+                        <p style="font-size: 14px; color: #999;">Try adjusting your search terms</p>
+                    `;
+                    content.appendChild(noResults);
+                }
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', function(e) {
+                    const searchTerm = e.target.value.toLowerCase().trim();
+                    performBillingSearch(searchTerm);
+                });
+            }
+            
+            // Load and initialize data
+            reloadData();
+            initializeFilters();
+            renderPerformanceTable();
+            initializeCharts();
+            
+            // Listen for storage changes
+            window.addEventListener('storage', function(e) {
+                if (e.key === 'teams' || e.key === 'projects' || e.key === 'tasks' || !e.key) {
+                    reloadData();
+                    initializeFilters();
+                    renderPerformanceTable();
+                    initializeCharts();
+                }
+            });
+            
+            // Initialize notifications
+            loadNotifications();
+            
+            const notificationIcon = document.getElementById('notificationIcon');
+            const notificationDropdown = document.getElementById('notificationDropdown');
+            const clearBtn = document.getElementById('clearAllNotifications');
+            
+            if (notificationIcon && notificationDropdown) {
+                notificationIcon.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    notificationDropdown.classList.toggle('show');
+                    loadNotifications();
+                });
+                
+                document.addEventListener('click', function(e) {
+                    if (!notificationIcon.contains(e.target) && !notificationDropdown.contains(e.target)) {
+                        notificationDropdown.classList.remove('show');
+                    }
+                });
+            }
+            
+            if (clearBtn) {
+                clearBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    clearAllNotifications();
+                });
+            }
+            
+            window.addEventListener('storage', function() {
+                loadNotifications();
+            });
+
+        });
+    </script>
+</body>
+</html>
+
+
+

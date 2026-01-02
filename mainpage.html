@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Graphura.in - Task Management</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background:
+      linear-gradient(
+        to right,
+        rgba(236, 242, 248, 0.95),
+        rgba(236, 242, 248, 0.8),
+        rgba(236, 242, 248, 0.95)
+      ),
+      url("img/mainBg2.png");
+
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      backdrop-filter: blur(0.2px);
+    }
+
+    /* Navbar */
+    nav {
+      background-color: #fff;
+      box-shadow: 0 4px 9px 5px rgba(0, 0, 0, 0.06);
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    nav h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #333;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .nav-links a {
+      padding: 10px 20px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .nav-links a.login-btn {
+      color: #666;
+      border: 2px solid #e0e0e0;
+    }
+
+    .nav-links a.login-btn:hover {
+      background-color: #f5f5f5;
+      border-color: #ccc;
+    }
+
+    .nav-links a.primary-btn {
+      background-color: #e63946;
+      color: white;
+    }
+
+    .nav-links a.primary-btn:hover {
+      background-color: #d32f2f;
+    }
+
+    #menuBtn {
+      display: none;
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: #333;
+      cursor: pointer;
+    }
+
+    #mobileMenu {
+      display: none;
+      background-color: #fff;
+      border-bottom: 1px solid #e0e0e0;
+      padding: 16px 32px;
+    }
+
+    #mobileMenu a {
+      display: block;
+      padding: 12px 0;
+      color: #666;
+      text-decoration: none;
+      border-bottom: 1px solid #f5f5f5;
+    }
+
+    #mobileMenu a:last-child {
+      border-bottom: none;
+    }
+
+    #mobileMenu a:hover {
+      color: #e63946;
+    }
+
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none;
+      }
+      
+      #menuBtn {
+        display: block;
+      }
+
+      #mobileMenu.show {
+        display: block;
+      }
+    }
+
+    /* Hero Section */
+    .hero-section {
+      padding: 70px 32px;
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+    }
+
+    .hero-content h2 {
+      text-shadow: 0px 4px 10px whitesmoke;
+      font-size: 48px;
+      font-weight: 700;
+      color: #333;
+      line-height: 1.2;
+      margin-bottom: 24px;
+    }
+
+    .hero-content h2 .highlight {
+      color: #e63946;
+      text-shadow: 0px 4px 10px whitesmoke;
+    }
+
+    .hero-content p {
+      text-shadow: 0px 4px 10px whitesmoke;
+      font-size: 18px;
+      color: #666;
+      line-height: 1.6;
+      margin-bottom: 32px;
+      max-width: 540px;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 16px;
+    }
+
+    .btn {
+      padding: 14px 28px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+      display: inline-block;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-primary {
+      background-color: #e63946;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: #d32f2f;
+    }
+
+    .btn-secondary {
+      background-color: #fff;
+      color: #333;
+      border: 2px solid #e0e0e0;
+    }
+
+    .btn-secondary:hover {
+      background-color: #f5f5f5;
+      border-color: #ccc;
+    }
+
+    .hero-preview {
+      background-color: rgba(255,255,255,0.30);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .preview-header {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .preview-dot {
+      box-shadow: 0px 0px 10px 10px whitesmoke;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    .preview-dot.red {
+      background-color: #ef4444;
+    }
+
+    .preview-dot.yellow {
+      background-color: #fbbf24;
+    }
+
+    .preview-dot.green {
+      background-color: #10b981;
+    }
+
+    .preview-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .preview-stat {
+      background-color: rgba(255,255,255,0.5);
+      box-shadow: 0 0 10px 1px rgba(0, 0, 0, 0.2);
+      padding: 20px;
+      border-radius: 12px;
+    }
+
+    .preview-stat.full {
+      grid-column: 1 / -1;
+    }
+
+    .preview-stat-label {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 8px;
+    }
+
+    .preview-stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: #333;
+    }
+
+    .preview-stat-value.green {
+      color: #10b981;
+    }
+
+    .preview-progress {
+      width: 100%;
+      height: 8px;
+      background-color: #e0e0e0;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 12px;
+    }
+
+    .preview-progress-bar {
+      height: 100%;
+      background-color: #e63946;
+      width: 75%;
+      border-radius: 4px;
+    }
+
+    /* Features Section */
+    .features-section {
+      padding: 50px 32px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .feature-card {
+      background-color: rgba(255,255,255,0.7);
+      border: 1px solid rgba(255,255,255,0.3);
+      box-shadow: 0 0 8px 4px rgba(0, 0, 0, 0.2);
+      padding: 32px;
+      border-radius: 12px;
+      
+      transition: all 0.2s;
+    }
+
+    .feature-card:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .feature-card h4 {
+      font-size: 20px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 12px;
+    }
+
+    .feature-card p {
+      font-size: 15px;
+      color: #666;
+      line-height: 1.6;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid #e0e0e0;
+      background-color: #fff;
+      padding: 32px;
+      text-align: center;
+      color: #666;
+      font-size: 14px;
+    }
+
+    @media (max-width: 968px) {
+      .hero-section {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+
+      .hero-content h2 {
+        font-size: 36px;
+      }
+
+      .features-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- ================= NAVBAR ================= -->
+  <nav>
+    <h1>Graphura.in</h1>
+
+    <!-- Desktop Menu -->
+    <div class="nav-links">
+      <a href="login.html" class="primary-btn">Get Started</a>
+      <a href="login.html" class="login-btn">Login</a>
+    </div>
+
+    <!-- Hamburger -->
+    <button id="menuBtn">☰</button>
+  </nav>
+
+  <!-- Mobile Menu -->
+  <div id="mobileMenu">
+    <a href="login.html">Get Started</a>
+    <a href="login.html">Login</a>
+  </div>
+
+  <!-- ================= HERO ================= -->
+  <section class="hero-section">
+    <!-- Left -->
+    <div class="hero-content">
+      <h2>
+        Manage Tasks <br>
+        <span class="highlight">Like a Pro</span>
+      </h2>
+
+      <p>
+        A powerful and modern task management dashboard designed to boost productivity
+        and keep everything organized in one place.
+      </p>
+
+      <div class="hero-buttons">
+        <a href="login.html" class="btn btn-primary">Get Started</a>
+        <a href="login.html" class="btn btn-secondary">Login</a>
+      </div>
+    </div>
+
+    <!-- Right Dashboard Preview -->
+    <div class="hero-preview">
+      <div class="preview-header">
+        <div class="preview-dot red"></div>
+        <div class="preview-dot yellow"></div>
+        <div class="preview-dot green"></div>
+      </div>
+
+      <div class="preview-stats">
+        <div class="preview-stat">
+          <div class="preview-stat-label">Total Tasks</div>
+          <div class="preview-stat-value">128</div>
+        </div>
+
+        <div class="preview-stat">
+          <div class="preview-stat-label">Completed</div>
+          <div class="preview-stat-value green">76</div>
+        </div>
+
+        <div class="preview-stat full">
+          <div class="preview-stat-label">Progress</div>
+          <div class="preview-progress">
+            <div class="preview-progress-bar"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FEATURES ================= -->
+  <section class="features-section">
+    <div class="features-grid">
+      <div class="feature-card">
+        <h4>Smart Tasks</h4>
+        <p>Create, edit & prioritize tasks easily.</p>
+      </div>
+
+      <div class="feature-card">
+        <h4>Analytics</h4>
+        <p>Visual insights for better decisions.</p>
+      </div>
+
+      <div class="feature-card">
+        <h4>Secure</h4>
+        <p>Your data is safe and encrypted.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FOOTER ================= -->
+  <footer>
+    © 2025 Graphura.in. All rights reserved.
+  </footer>
+
+  <script>
+    // Mobile menu toggle
+    const menuBtn = document.getElementById('menuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    
+    if (menuBtn && mobileMenu) {
+      menuBtn.addEventListener('click', function() {
+        mobileMenu.classList.toggle('show');
+      });
+    }
+  </script>
+</body>
+</html>
