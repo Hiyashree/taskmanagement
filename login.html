@@ -884,58 +884,58 @@
         e.preventDefault();
         
         const name = signupNameInput.value.trim();
-      const email = signupEmailInput.value.trim();
-      const password = signupPasswordInput.value;
-      const role = signupRoleInput.value;
-      
-      // Hide previous messages
-      errorMessage.classList.remove('show');
-      successMessage.classList.remove('show');
-      
-      // Validation
-      if (!name || !email || !password || !role) {
-        errorMessage.textContent = 'Please fill in all fields';
-        errorMessage.classList.add('show');
-        return;
-      }
+        const email = signupEmailInput.value.trim();
+        const password = signupPasswordInput.value;
+        const role = signupRoleInput.value;
+        
+        // Hide previous messages
+        errorMessage.classList.remove('show');
+        successMessage.classList.remove('show');
+        
+        // Validation
+        if (!name || !email || !password || !role) {
+          errorMessage.textContent = 'Please fill in all fields';
+          errorMessage.classList.add('show');
+          return;
+        }
 
-      if (password.length < 6) {
-        errorMessage.textContent = 'Password must be at least 6 characters';
-        errorMessage.classList.add('show');
-        return;
-      }
-      
-      // Get users from localStorage
-      const users = JSON.parse(localStorage.getItem('users')) || [];
-      
-      // Check if email already exists
-      const existingUser = users.find(u => u.email === email);
-      if (existingUser) {
-        errorMessage.textContent = 'Email already registered. Please login instead.';
-        errorMessage.classList.add('show');
-        return;
-      }
-      
-      // Create new user
-      const newUser = {
-        id: `${role}-${Date.now()}`,
-        email: email,
-        password: password,
-        name: name,
-        role: role
-      };
-      
-      users.push(newUser);
-      localStorage.setItem('users', JSON.stringify(users));
-      
-      // Show success message
-      successMessage.textContent = 'Account created successfully! You can now login.';
-      successMessage.classList.add('show');
-      
-      // Clear form
-      signupForm.reset();
-      
-      // Switch to login after 1.5 seconds
+        if (password.length < 6) {
+          errorMessage.textContent = 'Password must be at least 6 characters';
+          errorMessage.classList.add('show');
+          return;
+        }
+        
+        // Get users from localStorage
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        
+        // Check if email already exists
+        const existingUser = users.find(u => u.email === email);
+        if (existingUser) {
+          errorMessage.textContent = 'Email already registered. Please login instead.';
+          errorMessage.classList.add('show');
+          return;
+        }
+        
+        // Create new user
+        const newUser = {
+          id: `${role}-${Date.now()}`,
+          email: email,
+          password: password,
+          name: name,
+          role: role
+        };
+        
+        users.push(newUser);
+        localStorage.setItem('users', JSON.stringify(users));
+        
+        // Show success message
+        successMessage.textContent = 'Account created successfully! You can now login.';
+        successMessage.classList.add('show');
+        
+        // Clear form
+        signupForm.reset();
+        
+        // Switch to login after 1.5 seconds
         setTimeout(() => {
           loginToggle.click();
           emailInput.value = email;
