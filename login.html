@@ -726,31 +726,9 @@
       document.addEventListener('DOMContentLoaded', initializeDemoData);
     }
 
-    // Demo account click handlers
-    const demoAccountItems = document.querySelectorAll('.demo-account-item');
-    demoAccountItems.forEach(item => {
-      item.addEventListener('click', function() {
-        const email = this.getAttribute('data-email');
-        const password = this.getAttribute('data-password');
-        
-        // Switch to login form if not already active
-        if (!loginForm.classList.contains('active')) {
-          loginToggle.click();
-        }
-        
-        // Fill in the credentials
-        emailInput.value = email;
-        passwordInput.value = password;
-        
-        // Highlight the input fields briefly
-        emailInput.focus();
-        setTimeout(() => {
-          passwordInput.focus();
-        }, 200);
-      });
-    });
-
-    // Toggle between login and signup
+    // Wait for DOM to be ready before setting up event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+      // Get all form elements
     const loginToggle = document.getElementById('login-toggle');
     const signupToggle = document.getElementById('signup-toggle');
     const loginForm = document.getElementById('login-form');
@@ -758,43 +736,60 @@
     const formTitle = document.getElementById('form-title');
     const errorMessage = document.getElementById('error-message');
     const successMessage = document.getElementById('success-message');
+      const demoAccountsSection = document.getElementById('demo-accounts');
+      const emailInput = document.getElementById('login-email');
+      const passwordInput = document.getElementById('login-password');
+      const signupNameInput = document.getElementById('signup-name');
+      const signupEmailInput = document.getElementById('signup-email');
+      const signupPasswordInput = document.getElementById('signup-password');
+      const signupRoleInput = document.getElementById('signup-role');
 
-    const demoAccountsSection = document.getElementById('demo-accounts');
+      // Demo account click handlers
+      const demoAccountItems = document.querySelectorAll('.demo-account-item');
+      demoAccountItems.forEach(item => {
+        item.addEventListener('click', function() {
+          const email = this.getAttribute('data-email');
+          const password = this.getAttribute('data-password');
+          
+          // Switch to login form if not already active
+          if (!loginForm.classList.contains('active')) {
+            loginToggle.click();
+          }
+          
+          // Fill in the credentials
+          emailInput.value = email;
+          passwordInput.value = password;
+          
+          // Highlight the input fields briefly
+          emailInput.focus();
+          setTimeout(() => {
+            passwordInput.focus();
+          }, 200);
+        });
+      });
 
-    loginToggle.addEventListener('click', function() {
-      loginToggle.classList.add('active');
-      signupToggle.classList.remove('active');
-      loginForm.classList.add('active');
-      signupForm.classList.remove('active');
-      demoAccountsSection.style.display = 'block';
-      formTitle.textContent = 'Sign in to your account';
-      errorMessage.classList.remove('show');
-      successMessage.classList.remove('show');
-    });
+      // Toggle between login and signup
+      loginToggle.addEventListener('click', function() {
+        loginToggle.classList.add('active');
+        signupToggle.classList.remove('active');
+        loginForm.classList.add('active');
+        signupForm.classList.remove('active');
+        if (demoAccountsSection) demoAccountsSection.style.display = 'block';
+        formTitle.textContent = 'Sign in to your account';
+        errorMessage.classList.remove('show');
+        successMessage.classList.remove('show');
+      });
 
-    signupToggle.addEventListener('click', function() {
-      signupToggle.classList.add('active');
-      loginToggle.classList.remove('active');
-      signupForm.classList.add('active');
-      loginForm.classList.remove('active');
-      demoAccountsSection.style.display = 'none';
-      formTitle.textContent = 'Create your account';
-      errorMessage.classList.remove('show');
-      successMessage.classList.remove('show');
-    });
-
-    // Login form elements
-    const emailInput = document.getElementById('login-email');
-    const passwordInput = document.getElementById('login-password');
-    const loginBtn = document.getElementById('login-btn');
-
-    // Signup form elements
-    const signupNameInput = document.getElementById('signup-name');
-    const signupEmailInput = document.getElementById('signup-email');
-    const signupPasswordInput = document.getElementById('signup-password');
-    const signupRoleInput = document.getElementById('signup-role');
-    const signupBtn = document.getElementById('signup-btn');
-
+      signupToggle.addEventListener('click', function() {
+        signupToggle.classList.add('active');
+        loginToggle.classList.remove('active');
+        signupForm.classList.add('active');
+        loginForm.classList.remove('active');
+        if (demoAccountsSection) demoAccountsSection.style.display = 'none';
+        formTitle.textContent = 'Create your account';
+        errorMessage.classList.remove('show');
+        successMessage.classList.remove('show');
+      });
 
       // Login form submission
       loginForm.addEventListener('submit', function(e) {
@@ -877,10 +872,10 @@
           errorMessage.textContent = 'Unknown user role';
           errorMessage.classList.add('show');
       }
-      });
+    });
 
-      // Signup form submission
-      signupForm.addEventListener('submit', function(e) {
+    // Signup form submission
+    signupForm.addEventListener('submit', function(e) {
       e.preventDefault();
       
       const name = signupNameInput.value.trim();
@@ -936,11 +931,12 @@
       signupForm.reset();
       
       // Switch to login after 1.5 seconds
-      setTimeout(() => {
-        loginToggle.click();
-        emailInput.value = email;
-        passwordInput.value = password;
-      }, 1500);
+        setTimeout(() => {
+          loginToggle.click();
+          emailInput.value = email;
+          passwordInput.value = password;
+        }, 1500);
+      });
     });
   </script>
 </body>
