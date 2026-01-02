@@ -345,8 +345,9 @@
 
   <script>
 
-    // Initialize demo accounts
-    function initializeDemoAccounts() {
+    // Initialize all demo data
+    function initializeDemoData() {
+      // Initialize Demo Accounts
       const users = JSON.parse(localStorage.getItem('users')) || [];
       
       const demoAccounts = [
@@ -361,31 +362,343 @@
           id: 'leader-1',
           email: 'leader@gmail.com',
           password: 'leader123',
-          name: 'Team Leader',
+          name: 'Sarah Johnson',
           role: 'leader'
         },
         {
           id: 'employee-1',
           email: 'employee@gmail.com',
           password: 'employee123',
-          name: 'Employee User',
+          name: 'Alex Morgan',
           role: 'employee'
         }
       ];
       
-      // Add demo accounts if they don't exist
+      // Update or add demo accounts
       demoAccounts.forEach(demoAccount => {
-        const exists = users.find(u => u.email === demoAccount.email);
-        if (!exists) {
+        const existingIndex = users.findIndex(u => u.email === demoAccount.email);
+        if (existingIndex !== -1) {
+          // Update existing account
+          users[existingIndex] = { ...users[existingIndex], ...demoAccount };
+        } else {
+          // Add new account
           users.push(demoAccount);
         }
       });
       
       localStorage.setItem('users', JSON.stringify(users));
+      
+      // Initialize Demo Teams
+      const teams = JSON.parse(localStorage.getItem('teams')) || [];
+      const demoTeams = [
+        {
+          id: 'team-1',
+          name: 'Frontend Development Team',
+          description: 'Responsible for UI/UX development and frontend architecture',
+          leader: 'Sarah Johnson',
+          members: [
+            { name: 'Sarah Johnson', email: 'leader@gmail.com', role: 'leader' },
+            { name: 'Alex Morgan', email: 'employee@gmail.com', role: 'employee' },
+            { name: 'Mike Chen', email: 'mike.chen@graphura.com', role: 'employee' },
+            { name: 'Emily Davis', email: 'emily.davis@graphura.com', role: 'employee' }
+          ],
+          createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          id: 'team-2',
+          name: 'Backend Development Team',
+          description: 'Handles server-side logic, APIs, and database management',
+          leader: 'Sarah Johnson',
+          members: [
+            { name: 'Sarah Johnson', email: 'leader@gmail.com', role: 'leader' },
+            { name: 'David Wilson', email: 'david.wilson@graphura.com', role: 'employee' },
+            { name: 'Lisa Anderson', email: 'lisa.anderson@graphura.com', role: 'employee' }
+          ],
+          createdAt: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          id: 'team-3',
+          name: 'Full Stack Development Team',
+          description: 'End-to-end web application development',
+          leader: 'Sarah Johnson',
+          members: [
+            { name: 'Sarah Johnson', email: 'leader@gmail.com', role: 'leader' },
+            { name: 'Alex Morgan', email: 'employee@gmail.com', role: 'employee' },
+            { name: 'John Smith', email: 'john.smith@graphura.com', role: 'employee' }
+          ],
+          createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString()
+        }
+      ];
+      
+      // Update or add demo teams
+      demoTeams.forEach(demoTeam => {
+        const existingIndex = teams.findIndex(t => t.id === demoTeam.id);
+        if (existingIndex !== -1) {
+          teams[existingIndex] = { ...teams[existingIndex], ...demoTeam };
+        } else {
+          teams.push(demoTeam);
+        }
+      });
+      
+      localStorage.setItem('teams', JSON.stringify(teams));
+      
+      // Initialize Demo Projects
+      const projects = JSON.parse(localStorage.getItem('projects')) || [];
+      const demoProjects = [
+        {
+          id: 1,
+          name: 'E-Commerce Platform Redesign',
+          description: 'Complete redesign and modernization of the e-commerce platform with React and Node.js',
+          status: 'In Progress',
+          leader: 'Sarah Johnson',
+          teamId: 'team-1',
+          progress: 65,
+          createdAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(),
+          deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          id: 2,
+          name: 'RESTful API Development',
+          description: 'Building scalable REST APIs for mobile and web applications',
+          status: 'In Progress',
+          leader: 'Sarah Johnson',
+          teamId: 'team-2',
+          progress: 80,
+          createdAt: new Date(Date.now() - 40 * 24 * 60 * 60 * 1000).toISOString(),
+          deadline: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          id: 3,
+          name: 'Task Management Dashboard',
+          description: 'Modern task management system with real-time updates and collaboration features',
+          status: 'In Progress',
+          leader: 'Sarah Johnson',
+          teamId: 'team-3',
+          progress: 45,
+          createdAt: new Date(Date.now() - 35 * 24 * 60 * 60 * 1000).toISOString(),
+          deadline: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          id: 4,
+          name: 'Responsive Website Migration',
+          description: 'Migrating legacy website to modern responsive design with mobile-first approach',
+          status: 'In Progress',
+          leader: 'Sarah Johnson',
+          teamId: 'team-1',
+          progress: 90,
+          createdAt: new Date(Date.now() - 50 * 24 * 60 * 60 * 1000).toISOString(),
+          deadline: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          id: 5,
+          name: 'Database Optimization',
+          description: 'Optimizing database queries and implementing caching strategies',
+          status: 'Completed',
+          leader: 'Sarah Johnson',
+          teamId: 'team-2',
+          progress: 100,
+          createdAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(),
+          deadline: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString()
+        }
+      ];
+      
+      // Update or add demo projects
+      demoProjects.forEach(demoProject => {
+        const existingIndex = projects.findIndex(p => p.id === demoProject.id);
+        if (existingIndex !== -1) {
+          projects[existingIndex] = { ...projects[existingIndex], ...demoProject };
+        } else {
+          projects.push(demoProject);
+        }
+      });
+      
+      localStorage.setItem('projects', JSON.stringify(projects));
+      
+      // Initialize Demo Tasks
+      const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+      const demoTasks = [
+        {
+          id: 1,
+          title: 'Design User Authentication Flow',
+          description: 'Create login, signup, and password reset UI components with validation',
+          projectId: 1,
+          assignedTo: 'Alex Morgan',
+          status: 'In Progress',
+          priority: 'High',
+          dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+          createdDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          id: 2,
+          title: 'Implement Shopping Cart Functionality',
+          description: 'Build cart management with add, remove, and update quantity features',
+          projectId: 1,
+          assignedTo: 'Alex Morgan',
+          status: 'Pending',
+          priority: 'High',
+          dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+          createdAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
+          createdDate: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          id: 3,
+          title: 'Create Product API Endpoints',
+          description: 'Develop RESTful endpoints for product CRUD operations',
+          projectId: 2,
+          assignedTo: 'David Wilson',
+          status: 'Completed',
+          priority: 'Medium',
+          dueDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+          createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
+          createdDate: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          id: 4,
+          title: 'Setup Database Schema',
+          description: 'Design and implement database tables for user management',
+          projectId: 2,
+          assignedTo: 'Lisa Anderson',
+          status: 'In Progress',
+          priority: 'High',
+          dueDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(),
+          createdAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+          createdDate: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          id: 5,
+          title: 'Build Task List Component',
+          description: 'Create reusable task list component with drag-and-drop functionality',
+          projectId: 3,
+          assignedTo: 'Alex Morgan',
+          status: 'In Progress',
+          priority: 'Medium',
+          dueDate: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString(),
+          createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+          createdDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          id: 6,
+          title: 'Implement Real-time Notifications',
+          description: 'Add WebSocket support for real-time task updates and notifications',
+          projectId: 3,
+          assignedTo: 'John Smith',
+          status: 'Pending',
+          priority: 'Low',
+          dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+          createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+          createdDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          id: 7,
+          title: 'Mobile Responsive Design',
+          description: 'Ensure all pages are fully responsive for mobile devices',
+          projectId: 4,
+          assignedTo: 'Mike Chen',
+          status: 'Completed',
+          priority: 'High',
+          dueDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+          createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
+          createdDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          id: 8,
+          title: 'Performance Testing',
+          description: 'Conduct load testing and optimize page load times',
+          projectId: 4,
+          assignedTo: 'Emily Davis',
+          status: 'In Progress',
+          priority: 'Medium',
+          dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+          createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+          createdDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          id: 9,
+          title: 'Query Optimization',
+          description: 'Optimize slow database queries and add proper indexing',
+          projectId: 5,
+          assignedTo: 'David Wilson',
+          status: 'Completed',
+          priority: 'High',
+          dueDate: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString(),
+          createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+          createdDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          id: 10,
+          title: 'Implement Redis Caching',
+          description: 'Setup Redis cache for frequently accessed data',
+          projectId: 5,
+          assignedTo: 'Lisa Anderson',
+          status: 'Completed',
+          priority: 'Medium',
+          dueDate: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
+          createdAt: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString(),
+          createdDate: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString()
+        }
+      ];
+      
+      // Update or add demo tasks
+      demoTasks.forEach(demoTask => {
+        const existingIndex = tasks.findIndex(t => t.id === demoTask.id);
+        if (existingIndex !== -1) {
+          tasks[existingIndex] = { ...tasks[existingIndex], ...demoTask };
+        } else {
+          tasks.push(demoTask);
+        }
+      });
+      
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+      
+      // Initialize Demo Billing Data
+      const billingData = JSON.parse(localStorage.getItem('billingData')) || {
+        invoices: [
+          {
+            id: 'INV-2024-001',
+            client: 'Tech Solutions Inc.',
+            project: 'E-Commerce Platform Redesign',
+            amount: 15000,
+            status: 'Paid',
+            date: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
+            dueDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString()
+          },
+          {
+            id: 'INV-2024-002',
+            client: 'Digital Marketing Agency',
+            project: 'RESTful API Development',
+            amount: 12000,
+            status: 'Pending',
+            date: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
+            dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString()
+          },
+          {
+            id: 'INV-2024-003',
+            client: 'StartupXYZ',
+            project: 'Task Management Dashboard',
+            amount: 18000,
+            status: 'Paid',
+            date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+            dueDate: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString()
+          }
+        ],
+        revenue: {
+          total: 45000,
+          thisMonth: 15000,
+          lastMonth: 30000
+        },
+        expenses: {
+          total: 12000,
+          thisMonth: 4000,
+          lastMonth: 8000
+        }
+      };
+      
+      localStorage.setItem('billingData', JSON.stringify(billingData));
     }
     
-    // Initialize demo accounts on page load
-    initializeDemoAccounts();
+    // Initialize all demo data on page load
+    initializeDemoData();
 
     // Demo account click handlers
     const demoAccountItems = document.querySelectorAll('.demo-account-item');
