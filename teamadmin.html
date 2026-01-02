@@ -1415,6 +1415,7 @@ function saveTeamMembers() {
     
     // Save to localStorage
     localStorage.setItem('teams', JSON.stringify(teams));
+    localStorage.setItem('users', JSON.stringify(users)); // Ensure users list is saved (in case new employees were added)
     
     // Trigger storage event for other tabs
     window.dispatchEvent(new Event('storage'));
